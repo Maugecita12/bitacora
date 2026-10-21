@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bitácora Digestiva</title>
+<meta name="theme-color" content="#5d3b6b" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17151d" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Bitácora">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,600;9..144,700,100&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one column, phone-first. Input dock at top, day timeline below, bottom tab bar. */
+:root{
+  --bg:#f4f3f8; --panel:#ffffff; --fg:#241f2b; --muted:#6c657a; --line:#e2dfea;
+  --accent:#5d3b6b; --accent-ink:#ffffff;
+  --food:#4f7d55; --food-soft:#e3efe4;
+  --sym:#b1465f; --sym-soft:#f8e3e8;
+  --cycle:#b7772a; --cycle-soft:#f9ecd9;
+  --note:#4a6f9a; --note-soft:#e1ebf5;
+  --warn:#8a5a00; --warn-soft:#fff2d6;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#17151d; --panel:#211e2a; --fg:#ebe7f1; --muted:#a79fb6; --line:#332e3f;
+  --accent:#c9a6d8; --accent-ink:#1d1522;
+  --food:#8fc495; --food-soft:#213126;
+  --sym:#ec8aa0; --sym-soft:#3a2129;
+  --cycle:#e5a85a; --cycle-soft:#3a2d1b;
+  --note:#8fb4df; --note-soft:#1f2b3a;
+  --warn:#f0c061; --warn-soft:#3a3015;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#17151d; --panel:#211e2a; --fg:#ebe7f1; --muted:#a79fb6; --line:#332e3f;
+  --accent:#c9a6d8; --accent-ink:#1d1522;
+  --food:#8fc495; --food-soft:#213126;
+  --sym:#ec8aa0; --sym-soft:#3a2129;
+  --cycle:#e5a85a; --cycle-soft:#3a2d1b;
+  --note:#8fb4df; --note-soft:#1f2b3a;
+  --warn:#f0c061; --warn-soft:#3a3015;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+:root{padding-top:env(safe-area-inset-top,0px)}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 calc(84px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:560px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:1.9rem;letter-spacing:-.01em;font-variation-settings:"SOFT" 100}
+h2{font-size:1.25rem}
+h3{font-size:1.05rem}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,textarea,select{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem}
+input[type=number]{font-variant-numeric:tabular-nums}
+
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;padding-block:1.4rem .9rem}
+header.top .date{font-variant-numeric:tabular-nums;text-align:right}
+
+/* Views */
+.view{display:none}
+.view.active{display:block}
+
+/* Input dock */
+.dock{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem;box-shadow:0 8px 30px -22px rgba(30,20,40,.35)}
+.dock label{display:block;font-family:var(--display);font-size:1.15rem;margin-bottom:.55rem}
+.say{display:flex;gap:.5rem;align-items:stretch}
+.say textarea{flex:1;min-width:0;resize:none;min-height:56px;font-size:1.05rem;border-radius:14px;padding:.75rem .9rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border-radius:12px;padding:.6rem .95rem;font-weight:600;border:1px solid var(--line);background:var(--panel)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.mic{width:56px;padding:0;font-size:1.5rem;border-radius:14px}
+.btn.mic.listening{background:var(--sym-soft);border-color:var(--sym);color:var(--sym);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--sym) 40%,transparent)}50%{box-shadow:0 0 0 8px transparent}}
+@media (prefers-reduced-motion:reduce){.btn.mic.listening{animation:none}}
+.hint{margin-top:.6rem;font-size:.85rem;color:var(--muted)}
+.hint kbd{font:inherit;border:1px solid var(--line);border-radius:6px;padding:0 .35rem}
+.dockrow{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin-top:.7rem;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{border:1px solid var(--line);border-radius:999px;padding:.3rem .7rem;font-size:.85rem;background:var(--panel)}
+.chip.sym{border-color:color-mix(in srgb,var(--sym) 50%,var(--line));color:var(--sym)}
+.chip.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+details.more{margin-top:.6rem}
+details.more summary{cursor:pointer;color:var(--muted);font-size:.85rem;list-style:none}
+details.more summary::before{content:"+ ";}
+details.more[open] summary::before{content:"– ";}
+.sevrow{display:flex;gap:.4rem;align-items:center;margin-top:.5rem;flex-wrap:wrap}
+.sev{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);font-variant-numeric:tabular-nums;font-weight:600}
+.sev.active{background:var(--sym);color:#fff;border-color:var(--sym)}
+
+/* Status toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:.6rem 1rem;border-radius:999px;font-size:.9rem;z-index:20;max-width:90%;box-shadow:0 6px 24px -8px rgba(0,0,0,.4)}
+.toast button{text-decoration:underline;margin-left:.6rem;font-weight:600}
+
+/* Cycle card */
+.cycle{margin-top:.9rem;background:var(--cycle-soft);border-radius:16px;padding:.9rem 1rem;display:flex;gap:.8rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.cycle .big{font-family:var(--display);font-size:1.3rem}
+.cycle .phases{display:flex;gap:.3rem;flex-wrap:wrap}
+.cycle .chip.active{background:var(--cycle);border-color:var(--cycle);color:#fff}
+.cycle details{width:100%}
+.cycle details summary{font-size:.82rem;color:var(--muted);cursor:pointer}
+.cycle .cfg{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.5rem;font-size:.9rem}
+.cycle .cfg input{width:9.5rem}
+
+/* Timeline */
+.daynav{display:flex;align-items:center;justify-content:space-between;margin:1.4rem 0 .6rem}
+.daynav .title{font-family:var(--display);font-size:1.2rem}
+.daynav button{padding:.3rem .6rem;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.tl{display:flex;flex-direction:column;gap:.5rem}
+.entry{display:grid;grid-template-columns:3.1rem 4px 1fr;gap:.6rem;align-items:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.65rem .8rem}
+.entry .t{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem;padding-top:.15rem}
+.entry .bar{align-self:stretch;border-radius:2px;background:var(--line)}
+.entry.comida .bar{background:var(--food)} .entry.sintoma .bar{background:var(--sym)} .entry.ciclo .bar{background:var(--cycle)} .entry.nota .bar{background:var(--note)}
+.entry .body{min-width:0}
+.entry .kind{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.entry.comida .kind{color:var(--food)} .entry.sintoma .kind{color:var(--sym)} .entry.ciclo .kind{color:var(--cycle)} .entry.nota .kind{color:var(--note)}
+.entry .items{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.25rem}
+.entry .items span{border-radius:7px;padding:.1rem .5rem;font-size:.9rem}
+.entry.comida .items span{background:var(--food-soft)} .entry.sintoma .items span{background:var(--sym-soft)} .entry.ciclo .items span{background:var(--cycle-soft)} .entry.nota .items span{background:var(--note-soft)}
+.entry .raw{color:var(--muted);font-size:.82rem;margin-top:.25rem;overflow-wrap:anywhere}
+.entry .acts{display:flex;gap:.8rem;margin-top:.35rem;font-size:.8rem}
+.entry .acts button{color:var(--muted);text-decoration:underline}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:1.1rem;color:var(--muted);text-align:center}
+.editbox{display:grid;gap:.45rem;margin-top:.4rem}
+.editbox .row{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
+.editbox input[type=text]{flex:1;min-width:0}
+.editbox input[type=time]{width:7.5rem}
+.editbox select{padding:.4rem .5rem}
+
+/* Analysis */
+.ctl{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:.7rem 0 1rem}
+.ctl select{padding:.4rem .6rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1rem;margin-bottom:.9rem}
+.card h2{margin-bottom:.3rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.6rem}
+.stat{background:var(--bg);border-radius:10px;padding:.5rem .6rem}
+.stat .n{font-family:var(--display);font-size:1.5rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .l{font-size:.75rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto;margin-top:.5rem}
+th{text-align:left;font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:.35rem .4rem;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:.4rem .4rem;border-bottom:1px solid var(--line);vertical-align:top}
+td.num{text-align:right;white-space:nowrap}
+.bar-h{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:80px}
+.bar-h i{display:block;height:100%;background:var(--sym)}
+.lift{display:inline-block;border-radius:6px;padding:0 .4rem;font-weight:600;font-size:.82rem}
+.lift.hi{background:var(--sym-soft);color:var(--sym)} .lift.lo{background:var(--food-soft);color:var(--food)} .lift.mid{background:var(--bg);color:var(--muted)}
+.sublist{color:var(--muted);font-size:.8rem}
+.report{white-space:normal;line-height:1.55}
+.report h3{margin:.8rem 0 .25rem}
+.report ul{margin:.2rem 0 .5rem 1.1rem;padding:0}
+.report p{margin:.3rem 0}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:.55rem .8rem;font-size:.85rem;margin-top:.5rem}
+.banner{background:var(--note-soft);color:var(--note);border-radius:10px;padding:.55rem .8rem;font-size:.85rem;margin-bottom:.8rem}
+
+/* Tab bar */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:.4rem;background:var(--panel);border-top:1px solid var(--line);
+  padding-top:.5rem;padding-bottom:calc(.6rem + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:15}
+nav.tabs button{flex:1;max-width:180px;padding:.55rem .6rem;border-radius:12px;font-weight:600;color:var(--muted)}
+nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
+.sr{position:absolute;left:-9999px}
+.setrow{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.5rem}
+.copybox{width:100%;min-height:120px;font-size:.8rem;margin-top:.5rem;font-family:ui-monospace,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><div class="eyebrow">Diario de comidas y síntomas</div><h1>Bitácora Digestiva</h1></div>
+    <div class="date small muted" id="hdrDate"></div>
+  </header>
+
+
+  <!-- DIARIO -->
+  <section class="view active" id="view-diario">
+    <div class="dock">
+      <label for="say">¿Qué comiste o cómo te sentís?</label>
+      <div class="say">
+        <textarea id="say" rows="2" placeholder="comí ensalada con pollo y arroz" autocomplete="off" enterkeyhint="send"></textarea>
+        <button class="btn mic" id="micBtn" type="button" aria-label="Dictar" title="Dictar">🎤</button>
+      </div>
+      <div class="hint" id="micHint">Tocá el campo y usá el micrófono del teclado del celular para dictar. Decí por ejemplo: <em>comí tostadas con palta</em>, <em>hinchazón fuerte</em>, <em>manché un poco</em>.</div>
+      <div class="dockrow">
+        <div class="chips" id="symChips"></div>
+        <button class="btn primary" id="saveBtn" type="button">Registrar</button>
+      </div>
+      <details class="more">
+        <summary>Intensidad y hora</summary>
+        <div class="sevrow"><span class="small muted">Intensidad</span>
+          <button class="sev" data-sev="1" type="button">1</button><button class="sev" data-sev="2" type="button">2</button><button class="sev" data-sev="3" type="button">3</button><button class="sev" data-sev="4" type="button">4</button><button class="sev" data-sev="5" type="button">5</button>
+          <span class="small muted" style="margin-left:.6rem">Hora</span><input type="time" id="sayTime" aria-label="Hora del registro">
+        </div>
+      </details>
+    </div>
+
+    <div class="cycle" id="cycleCard">
+      <div><div class="eyebrow">Sangrado</div><div class="big" id="cycleBig">Sin marcar</div><div class="small muted" id="cycleSub">Marcá cómo fue el día, o decí “sangrado leve” o “manché”.</div></div>
+      <div class="phases" id="phaseChips"></div>
+    </div>
+
+    <div class="daynav">
+      <button id="prevDay" type="button" aria-label="Día anterior">‹</button>
+      <div class="title" id="dayTitle">Hoy</div>
+      <button id="nextDay" type="button" aria-label="Día siguiente">›</button>
+    </div>
+    <div class="tl" id="timeline"></div>
+  </section>
+
+  <!-- ANÁLISIS -->
+  <section class="view" id="view-analisis">
+    <div class="ctl">
+      <label class="small muted">Período <select id="period"><option value="7">Última semana</option><option value="30" selected>Último mes</option><option value="90">Últimos 3 meses</option><option value="0">Todo</option></select></label>
+      <label class="small muted">Ventana <select id="win"><option value="2">2 h</option><option value="6" selected>6 h</option><option value="12">12 h</option><option value="24">24 h</option></select></label>
+      <label class="small muted">Sangrado <select id="phaseFilter"><option value="">Todos los días</option><option value="con">Días con sangrado</option><option value="sin">Días sin sangrado</option></select></label>
+    </div>
+    <div id="analysis"></div>
+    <div class="card">
+      <h2>Informe con Claude</h2>
+      <p class="small muted">Arma un texto con los registros del período y las preguntas para Claude (alimentos sospechosos para histaminosis, lactosa e IMO, días con y sin sangrado). Lo copiás y lo pegás en el chat de Claude.</p>
+      <div class="ctl"><button class="btn primary" id="reportBtn" type="button">Copiar para Claude</button><button class="btn" id="shareBtn" type="button" hidden>Compartir</button></div>
+      <textarea class="copybox" id="reportText" readonly hidden aria-label="Texto para Claude"></textarea>
+      <div class="note">Esto es un registro personal para conversar con tu médica o nutricionista; no reemplaza una consulta.</div>
+    </div>
+    <div class="card">
+      <h2>Datos y respaldo</h2>
+      <p class="small muted">Todo se guarda en este teléfono. Hacé un respaldo cada tanto; se puede restaurar en otro dispositivo.</p>
+      <div class="ctl"><button class="btn" id="exportBtn" type="button">Exportar CSV</button><button class="btn" id="backupBtn" type="button">Respaldo (JSON)</button><label class="btn">Restaurar <input type="file" id="restoreIn" accept="application/json" class="sr"></label></div>
+      <div class="setrow"><label><input type="checkbox" id="autoMic"> Escuchar apenas se abre la app</label></div>
+      <div class="small muted" id="installHint" hidden>Para tenerla como app: menú del navegador → <b>Agregar a pantalla de inicio</b>.</div>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs">
+  <button class="active" data-view="diario" type="button">Diario</button>
+  <button data-view="analisis" type="button">Análisis</button>
+</nav>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const BLEEDS=["ninguno","manchado","leve","moderado","abundante"];
+const SYMPTOMS=[
+ [/hinch|inflamad|panza dura|distensi/,"hinchazón"],
+ [/\bgases?\b|flatul|eruct/,"gases"],
+ [/dolor (de )?(panza|abdom|est[óo]mago|vientre)|c[óo]lic|retorcij|dolor abdominal/,"dolor abdominal"],
+ [/dolor p[ée]lvic|dolor de ovari|dolor en (la )?pelvis/,"dolor pélvico"],
+ [/diarrea|flojo|suelt/,"diarrea"],
+ [/estre[ñn]i|constipa|no pude ir/,"estreñimiento"],
+ [/n[áa]usea|ganas de vomitar|vomit/,"náuseas"],
+ [/reflujo|acidez|ardor/,"reflujo"],
+ [/picaz|pic[óo]n|urticaria|ronch|sarpullido|comez/,"picazón"],
+ [/dolor de cabeza|migra[ñn]|jaqueca|cefalea/,"dolor de cabeza"],
+ [/cansanci|fatiga|agotad|sin energ/,"fatiga"],
+ [/congesti|moco|nariz tapada|estornud|rinitis/,"congestión"],
+ [/palpitac|taquicard/,"palpitaciones"],
+ [/mareo|mareada/,"mareo"],
+ [/insomnio|no dorm|mal dorm/,"insomnio"],
+ [/ansied|irritab|bajón|triste/,"ánimo"],
+];
+const WAKE_RE=/me levant|me despert|al despertar|al levantarme|de ma[ñn]ana|amanec/;
+const QUICK=["hinchazón","gases","dolor abdominal","diarrea","estreñimiento","náuseas","reflujo","picazón","dolor de cabeza","fatiga"];
+const FOOD_VERBS=/^(com[ií]|desayun[ée]|almorc[ée]|cen[ée]|merend[ée]|tom[ée]|beb[ií]|pico?te[ée]|me com[ií]|me tom[ée]|comida:|comi)\b/;
+const BLEED_RE=/sangr|manch|me vino|me baj[óo]|menstru|\bregla\b|per[ií]odo|periodo|spotting/;
+
+// ---------- state ----------
+let days={};            // date -> {date, bleed?, entries:[...]}
+let viewDate=todayStr();
+let sev=null;
+let lastSaved=null;
+let unsub=[];
+
+// ---------- helpers ----------
+function pad(n){return String(n).padStart(2,"0")}
+function dstr(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function todayStr(){return dstr(new Date())}
+function hm(iso){const d=new Date(iso);return pad(d.getHours())+":"+pad(d.getMinutes())}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function addDays(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return dstr(d)}
+function fmtDate(s){const d=new Date(s+"T12:00:00");return d.toLocaleDateString("es-UY",{weekday:"long",day:"numeric",month:"long"})}
+function norm(s){return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+function ls(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||"null");localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
+
+function toast(msg,undo){const t=$("#toast");t.innerHTML=esc(msg)+(undo?' <button type="button" id="undoBtn">Deshacer</button>':"");t.hidden=false;
+  if(undo)$("#undoBtn").onclick=()=>{undo();t.hidden=true};clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,5000)}
+
+// ---------- bleeding (per day) ----------
+function bleedOf(dateStr){const d=days[dateStr];return d&&d.bleed?d.bleed:null}
+function bleedFromText(n){if(/abundant|mucho|fuerte/.test(n))return "abundante";if(/moderad|normal|medio/.test(n))return "moderado";if(/manch|spotting|gotas|poquit|apenas/.test(n))return "manchado";if(/sin sangr|no sangr|no manch|par[óo]|se cort[óo]/.test(n))return "ninguno";return "leve"}
+function renderCycle(){
+  const b=bleedOf(viewDate);
+  $("#cycleBig").textContent=b?(b==="ninguno"?"Sin sangrado":"Sangrado "+b):"Sin marcar";
+  $("#cycleSub").textContent=b?"Marcado para este día. Cambiá tocando otra opción.":"Marcá cómo fue el día, o decí “sangrado leve” o “manché”.";
+  $("#phaseChips").innerHTML=BLEEDS.map(x=>`<button type="button" class="chip${x===b?" active":""}" data-phase="${x}">${x==="ninguno"?"sin sangrado":x}</button>`).join("");
+}
+async function setBleed(date,level){
+  if(!days[date])days[date]={date,entries:[]};
+  days[date].bleed=level; await writeDay(date); render();
+}
+
+// ---------- parsing ----------
+function parseTime(text,baseDate){
+  const n=norm(text); let d=new Date();
+  if(baseDate!==todayStr()){d=new Date(baseDate+"T12:00:00")}
+  let m;
+  if(/\bayer\b/.test(n)){d.setDate(d.getDate()-1)}
+  if((m=n.match(/\bhace (\d+) ?(h\b|hora|horas|min|minutos)/))){const q=+m[1];if(/h/.test(m[2])&&!/min/.test(m[2]))d.setHours(d.getHours()-q);else d.setMinutes(d.getMinutes()-q)}
+  else if((m=n.match(/\ba las (\d{1,2})(?:[:.h](\d{2}))?/))){let h=+m[1];const mi=m[2]?+m[2]:0;if(h<=12&&/de la tarde|de la noche/.test(n)&&h<12)h+=12;d.setHours(h,mi,0,0)}
+  const manual=$("#sayTime").value; if(manual){const [h,mi]=manual.split(":");d.setHours(+h,+mi,0,0)}
+  return d.toISOString();
+}
+function cleanItem(s){return s.replace(/^(un|una|unos|unas|el|la|los|las|de|del|algo de|un poco de|mucho|mucha|dos|tres|cuatro|media|medio)\s+/i,"").replace(/[.!?]+$/,"").trim()}
+function parse(text,baseDate){
+  const raw=text.trim(); const n=norm(raw); const at=parseTime(raw,baseDate);
+  const syms=[]; for(const [re,name] of SYMPTOMS){if(re.test(n)&&!syms.includes(name))syms.push(name)}
+  let s=sev; if(s==null){ if(/leve|poquit|un poco/.test(n))s=1; else if(/moderad|bastante/.test(n))s=3; else if(/fuerte|mucho|intens|horrible|terrible|muy/.test(n))s=4; }
+  const m=n.match(/\b([1-5])\s*(\/\s*5|de 5)?\b(?!\s*(h|hora|min|tostada|huevo))/); if(s==null&&m&&!/a las|hace/.test(n))s=+m[1];
+  if(BLEED_RE.test(n)&&!FOOD_VERBS.test(n)){
+    const level=bleedFromText(n);
+    return {kind:"ciclo",items:[level==="ninguno"?"sin sangrado":"sangrado "+level],text:raw,t:at,bleed:level};
+  }
+  if(FOOD_VERBS.test(n)||(/\b(comida|desayuno|almuerzo|cena|merienda|snack)\b/.test(n)&&!syms.length)){
+    let rest=raw.replace(/^[^ ]+( me)?\s+/i,"").replace(/\ba las \d{1,2}([:.h]\d{2})?( de la (tarde|noche|mañana))?/i,"").replace(/\bhace \d+ ?(h|horas?|min|minutos)/i,"").replace(/\bayer\b/i,"");
+    rest=rest.replace(/\bde la (tarde|noche|mañana)\b/i,"");
+    const items=rest.split(/,|\by\b|\bcon\b|\bmás\b|\+|\bjunto a\b/i).map(cleanItem).filter(x=>x.length>1);
+    return {kind:"comida",items:items.length?items:[cleanItem(rest)||raw],text:raw,t:at};
+  }
+  if(syms.length||WAKE_RE.test(n)||/me siento|me duele|tengo|siento|molest|malestar|dolor/.test(n)){
+    return {kind:"sintoma",items:syms.length?syms:[cleanItem(raw.replace(/^(tengo|siento|me siento|me duele|me levant[ée] con|me despert[ée] con)\s+/i,""))],text:raw,t:at,sev:s||null,wake:WAKE_RE.test(n)||undefined};
+  }
+  return {kind:"nota",items:[raw.length>40?raw.slice(0,40)+"…":raw],text:raw,t:at};
+}
+
+// ---------- persistence ----------
+function dayOf(iso){return dstr(new Date(iso))}
+async function writeDay(date){
+  const doc=days[date]||{date,entries:[]}; days[date]=doc;
+  try{localStorage.setItem("days",JSON.stringify(days))}catch(e){toast("No se pudo guardar: sin espacio en el navegador.")}
+}
+async function addEntry(e){
+  e.id=uid(); const date=dayOf(e.t);
+  if(!days[date])days[date]={date,entries:[]};
+  days[date].entries.push(e); days[date].entries.sort((a,b)=>a.t<b.t?-1:1);
+  if(e.kind==="ciclo"&&e.bleed)days[date].bleed=e.bleed;
+  await writeDay(date); render();
+  lastSaved={date,id:e.id};
+  toast((e.kind==="comida"?"Comida":e.kind==="sintoma"?"Síntoma":e.kind==="ciclo"?"Sangrado":"Nota")+" registrado: "+e.items.join(", ")+" · "+hm(e.t),()=>removeEntry(date,e.id));
+}
+async function removeEntry(date,id){const d=days[date];if(!d)return;d.entries=d.entries.filter(x=>x.id!==id);await writeDay(date);render()}
+async function updateEntry(date,id,patch){const d=days[date];if(!d)return;const e=d.entries.find(x=>x.id===id);if(!e)return;Object.assign(e,patch);
+  const nd=dayOf(e.t); if(nd!==date){d.entries=d.entries.filter(x=>x.id!==id);await writeDay(date);if(!days[nd])days[nd]={date:nd,entries:[]};days[nd].entries.push(e);days[nd].entries.sort((a,b)=>a.t<b.t?-1:1);await writeDay(nd)}else{d.entries.sort((a,b)=>a.t<b.t?-1:1);await writeDay(date)}render()}
+
+// ---------- render ----------
+const KIND_LABEL={comida:"Comida",sintoma:"Síntoma",ciclo:"Sangrado",nota:"Nota"};
+function render(){
+  $("#hdrDate").textContent=fmtDate(todayStr());
+  $("#dayTitle").textContent=viewDate===todayStr()?"Hoy":viewDate===addDays(todayStr(),-1)?"Ayer":fmtDate(viewDate);
+  $("#nextDay").disabled=viewDate>=todayStr();
+  renderCycle();
+  const d=days[viewDate]; const tl=$("#timeline");
+  if(!d||!d.entries.length){tl.innerHTML='<div class="empty">Nada registrado todavía. Decí qué comiste o cómo te sentís y tocá <b>Registrar</b>.</div>';return}
+  tl.innerHTML=d.entries.map(e=>`<div class="entry ${e.kind}" data-id="${e.id}">
+    <div class="t">${hm(e.t)}</div><div class="bar"></div>
+    <div class="body"><div class="kind">${KIND_LABEL[e.kind]}${e.sev?" · intensidad "+e.sev:""}${e.wake?" · al despertar":""}</div>
+      <div class="items">${e.items.map(i=>"<span>"+esc(i)+"</span>").join("")}</div>
+      ${e.text&&e.text!==e.items.join(", ")?'<div class="raw">“'+esc(e.text)+'”</div>':""}
+      <div class="acts"><button type="button" data-act="edit">editar</button><button type="button" data-act="del">borrar</button></div>
+      <div class="editbox" hidden></div>
+    </div></div>`).join("");
+  tl.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
+    const el=b.closest(".entry"), id=el.dataset.id, e=d.entries.find(x=>x.id===id);
+    if(b.dataset.act==="del"){removeEntry(viewDate,id);toast("Borrado",()=>{d.entries.push(e);d.entries.sort((a,b)=>a.t<b.t?-1:1);writeDay(viewDate);render()});return}
+    const box=el.querySelector(".editbox"); if(!box.hidden){box.hidden=true;return}
+    box.hidden=false; box.innerHTML=`<div class="row"><select aria-label="Tipo">${Object.keys(KIND_LABEL).map(k=>`<option value="${k}"${k===e.kind?" selected":""}>${KIND_LABEL[k]}</option>`).join("")}</select><input type="time" value="${hm(e.t)}" aria-label="Hora"><select aria-label="Intensidad"><option value="">sin intensidad</option>${[1,2,3,4,5].map(n=>`<option value="${n}"${e.sev===n?" selected":""}>intensidad ${n}</option>`).join("")}</select></div>
+      <div class="row"><input type="text" value="${esc(e.items.join(", "))}" aria-label="Elementos, separados por coma"></div>
+      <div class="row"><button type="button" class="btn primary">Guardar</button><button type="button" class="btn">Cancelar</button></div>`;
+    const [kindSel,timeIn,sevSel]=box.querySelectorAll("select,input[type=time]"); const itemsIn=box.querySelector("input[type=text]");
+    const sevS=box.querySelectorAll("select")[1];
+    box.querySelector(".btn.primary").onclick=()=>{const t=new Date(e.t);const [h,m]=timeIn.value.split(":");t.setHours(+h,+m);updateEntry(viewDate,id,{kind:kindSel.value,t:t.toISOString(),sev:sevS.value?+sevS.value:null,items:itemsIn.value.split(",").map(s=>s.trim()).filter(Boolean)})};
+    box.querySelector(".btn:not(.primary)").onclick=()=>box.hidden=true;
+  });
+}
+
+// ---------- analysis ----------
+function allEntries(){return Object.values(days).flatMap(d=>d.entries).sort((a,b)=>a.t<b.t?-1:1)}
+function analyze(){
+  const period=+$("#period").value, win=+$("#win").value, pf=$("#phaseFilter").value;
+  const since=period?Date.now()-period*864e5:0;
+  let es=allEntries().filter(e=>new Date(e.t).getTime()>=since);
+  const bleedDay=e=>{const b=bleedOf(dayOf(e.t));return b&&b!=="ninguno"};
+  if(pf==="con")es=es.filter(bleedDay); else if(pf==="sin")es=es.filter(e=>!bleedDay(e));
+  const foods=es.filter(e=>e.kind==="comida"), syms=es.filter(e=>e.kind==="sintoma");
+  const out=$("#analysis");
+  if(!foods.length&&!syms.length){out.innerHTML='<div class="card"><h2>Sin datos en el período</h2><p class="muted small">Registrá comidas y síntomas unos días y acá vas a ver qué alimentos aparecen antes de cada síntoma.</p></div>';return}
+  const symsAfter=f=>{const t0=new Date(f.t).getTime();return syms.filter(s=>{const t=new Date(s.t).getTime();return t>t0&&t-t0<=win*36e5})};
+  const base=foods.length?foods.filter(f=>symsAfter(f).length).length/foods.length:0;
+  const fasting=syms.filter(s=>{const t=new Date(s.t).getTime();return !foods.some(f=>{const t0=new Date(f.t).getTime();return t0<t&&t-t0<=win*36e5})});
+  const fastingCount={};for(const s of fasting)for(const i of s.items)fastingCount[i]=(fastingCount[i]||0)+1;
+  const byItem={};
+  for(const f of foods){const after=symsAfter(f);const seen=new Set();for(let it of f.items){it=norm(it).trim();if(!it||seen.has(it))continue;seen.add(it);const r=byItem[it]||(byItem[it]={n:0,hit:0,syms:{},sevSum:0});r.n++;if(after.length){r.hit++;for(const s of after)for(const si of s.items){r.syms[si]=(r.syms[si]||0)+1;r.sevSum+=s.sev||0}}}}
+  const rows=Object.entries(byItem).map(([k,r])=>({k,...r,rate:r.hit/r.n,lift:base?(r.hit/r.n)/base:0})).sort((a,b)=>(b.rate-a.rate)||(b.n-a.n));
+  const symCount={};for(const s of syms)for(const i of s.items)symCount[i]=(symCount[i]||0)+1;
+  const phaseSym={};for(const s of syms){const b=bleedOf(dayOf(s.t));const p=b?(b==="ninguno"?"sin sangrado":"sangrado "+b):"sin marcar";phaseSym[p]=phaseSym[p]||{};for(const i of s.items)phaseSym[p][i]=(phaseSym[p][i]||0)+1}
+  const BLEED_ROWS=["sin sangrado","sangrado manchado","sangrado leve","sangrado moderado","sangrado abundante","sin marcar"];
+  const liftTag=x=>x.n<2?'<span class="lift mid">pocos datos</span>':x.lift>=1.5?'<span class="lift hi">×'+x.lift.toFixed(1)+'</span>':x.lift<=0.6?'<span class="lift lo">×'+x.lift.toFixed(1)+'</span>':'<span class="lift mid">×'+x.lift.toFixed(1)+'</span>';
+  out.innerHTML=`<div class="card"><h2>Resumen</h2><div class="small muted">Síntoma dentro de las ${win} h después de comer.</div>
+    <div class="stats"><div class="stat"><div class="n">${foods.length}</div><div class="l">comidas</div></div><div class="stat"><div class="n">${syms.length}</div><div class="l">síntomas</div></div><div class="stat"><div class="n">${Math.round(base*100)}%</div><div class="l">comidas seguidas de síntoma</div></div></div>
+    <div class="small" style="margin-top:.6rem"><b>${fasting.length}</b> de ${syms.length} síntomas aparecieron sin ninguna comida en las ${win} h previas${fasting.length?": "+Object.entries(fastingCount).sort((a,b)=>b[1]-a[1]).map(([s,c])=>esc(s)+" ("+c+")").join(", "):""}. <span class="muted">Esos apuntan más al ciclo, al IMO o al sueño que a un alimento puntual.</span></div></div>
+  <div class="card"><h2>Alimentos y lo que vino después</h2><div class="small muted">Orden: % de veces que un síntoma apareció dentro de la ventana. “×” compara contra el promedio de todas las comidas.</div>
+    <div class="tablewrap"><table><thead><tr><th>Alimento</th><th>Veces</th><th>Con síntoma</th><th></th><th>Síntomas</th></tr></thead><tbody>
+    ${rows.slice(0,40).map(r=>`<tr><td>${esc(r.k)}</td><td class="num">${r.n}</td><td class="num">${r.hit} (${Math.round(r.rate*100)}%)</td><td><div class="bar-h"><i style="width:${Math.round(r.rate*100)}%"></i></div></td><td>${liftTag(r)} <span class="sublist">${Object.entries(r.syms).sort((a,b)=>b[1]-a[1]).map(([s,c])=>esc(s)+" ("+c+")").join(", ")}</span></td></tr>`).join("")}
+    </tbody></table></div>${rows.length>40?'<div class="small muted">Se muestran los 40 primeros.</div>':""}</div>
+  <div class="card"><h2>Síntomas según el sangrado del día</h2>
+    <div class="tablewrap"><table><thead><tr><th>Día</th>${Object.keys(symCount).sort((a,b)=>symCount[b]-symCount[a]).slice(0,6).map(s=>"<th>"+esc(s)+"</th>").join("")}<th>Total</th></tr></thead><tbody>
+    ${BLEED_ROWS.filter(p=>phaseSym[p]).map(p=>`<tr><td>${esc(p)}</td>${Object.keys(symCount).sort((a,b)=>symCount[b]-symCount[a]).slice(0,6).map(s=>'<td class="num">'+(phaseSym[p][s]||"·")+"</td>").join("")}<td class="num">${Object.values(phaseSym[p]).reduce((a,b)=>a+b,0)}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="small muted" style="margin-top:.5rem">Con endometriosis y el DIU reciente, los días con sangrado pueden sumar síntomas por sí solos: compará un mismo alimento en días con y sin sangrado antes de culparlo.</div></div>`;
+}
+
+function periodData(){
+  const period=+$("#period").value; const since=period?Date.now()-period*864e5:0;
+  return allEntries().filter(e=>new Date(e.t).getTime()>=since).map(e=>({t:e.t.slice(0,16).replace("T"," "),tipo:e.kind,items:e.items,int:e.sev||undefined,sangrado_del_dia:bleedOf(dayOf(e.t))||undefined,al_despertar:e.wake||undefined}));
+}
+function buildPrompt(){
+  const data=periodData(); if(!data.length)return null;
+  return `Sos un asistente que ayuda a una persona con endometriosis, histaminosis (intolerancia a la histamina / déficit de DAO), intolerancia a la lactosa e IMO (sobrecrecimiento de metanógenos intestinales) a revisar su diario de comidas y síntomas. Tiene un DIU hormonal puesto hace poco y sangrados irregulares, así que no se conoce la fase del ciclo: solo si ese día hubo sangrado y cuánto. Respondé en español rioplatense, con tono claro y cercano, sin alarmar.
+Datos (hora local, tipo, elementos, intensidad 1-5, sangrado del día, si fue al despertar):
+${JSON.stringify(data)}
+Ventana de interés: síntomas dentro de las ${$("#win").value} horas después de una comida.
+Devolvé un informe en Markdown con estas secciones:
+### Lo que más se repite
+### Alimentos sospechosos (y por qué: histamina, lactosa, FODMAP/IMO)
+### Días con sangrado vs. sin sangrado
+### Qué probar la semana que viene
+### Para llevarle a la médica
+Reglas: basate solo en los datos; indicá cuántas veces ocurrió cada cosa; distinguí correlación de causa; si hay pocos datos decilo. Sin diagnósticos.`;
+}
+async function report(){
+  const p=buildPrompt(); const box=$("#reportText");
+  if(!p){toast("No hay registros en el período.");return}
+  box.value=p; box.hidden=false;
+  try{await navigator.clipboard.writeText(p);toast("Copiado. Pegalo en el chat de Claude.")}catch(e){box.focus();box.select();toast("Seleccioná el texto y copialo.")}
+}
+async function shareReport(){const p=buildPrompt();if(!p){toast("No hay registros en el período.");return}try{await navigator.share({title:"Bitácora Digestiva",text:p})}catch(e){}}
+function download(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function exportCsv(){
+  const rows=[["fecha_hora","tipo","elementos","intensidad","sangrado_del_dia","al_despertar","texto"]].concat(allEntries().map(e=>[e.t,e.kind,e.items.join("; "),e.sev||"",bleedOf(dayOf(e.t))||"",e.wake?"sí":"",e.text||""]));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+  download("bitacora-digestiva.csv",new Blob(["﻿"+csv],{type:"text/csv"}));
+}
+function backup(){download("bitacora-respaldo-"+todayStr()+".json",new Blob([JSON.stringify({version:1,days},null,1)],{type:"application/json"}))}
+function restore(file){const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);const src=j.days||j;let n=0;
+  for(const k in src){const d=src[k];if(!d||!Array.isArray(d.entries))continue;if(!days[k])days[k]={date:k,entries:[]};if(d.bleed)days[k].bleed=d.bleed;const ids=new Set(days[k].entries.map(e=>e.id));for(const e of d.entries)if(!ids.has(e.id)){days[k].entries.push(e);n++}days[k].entries.sort((a,b)=>a.t<b.t?-1:1)}
+  localStorage.setItem("days",JSON.stringify(days));render();toast("Restaurado: "+n+" registros nuevos.")}catch(e){toast("El archivo no es un respaldo válido.")}};r.readAsText(file)}
+
+// ---------- voice ----------
+let startListening=null;
+function setupVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition; const btn=$("#micBtn");
+  if(!SR){btn.hidden=true;$("#micHint").innerHTML="Este navegador no tiene reconocimiento de voz: tocá el campo y usá el <b>micrófono del teclado</b>.";return}
+  $("#micHint").innerHTML="Tocá 🎤 y decí por ejemplo: <em>comí tostadas con palta</em>, <em>hinchazón fuerte</em>, <em>manché un poco</em>. Se registra solo al terminar de hablar.";
+  let rec=null, on=false;
+  startListening=()=>{
+    if(on){try{rec.stop()}catch(e){}return}
+    try{rec=new SR();rec.lang="es-UY";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+      rec.onstart=()=>{on=true;btn.classList.add("listening");btn.textContent="■";$("#say").placeholder="Escuchando…"};
+      rec.onresult=ev=>{let s="";for(const r of ev.results)s+=r[0].transcript;$("#say").value=s;if(ev.results[ev.results.length-1].isFinal){setTimeout(()=>save(),250)}};
+      rec.onerror=ev=>{on=false;btn.classList.remove("listening");btn.textContent="🎤";
+        if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){toast("Permiso de micrófono denegado. Habilitalo en los ajustes del navegador o dictá con el teclado.");$("#say").focus()}
+        else if(ev.error==="no-speech"){toast("No escuché nada. Probá de nuevo.")}};
+      rec.onend=()=>{on=false;btn.classList.remove("listening");btn.textContent="🎤";$("#say").placeholder="comí ensalada con pollo y arroz"};
+      rec.start();
+    }catch(e){toast("No se pudo iniciar el micrófono.")}
+  };
+  btn.onclick=startListening;
+}
+
+// ---------- events ----------
+async function save(){
+  const text=$("#say").value.trim(); if(!text)return;
+  const e=parse(text,viewDate); await addEntry(e);
+  $("#say").value=""; sev=null; document.querySelectorAll(".sev").forEach(b=>b.classList.remove("active")); $("#sayTime").value="";
+}
+$("#saveBtn").onclick=save;
+$("#say").addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.preventDefault();save()}});
+$("#symChips").innerHTML=QUICK.map(s=>`<button type="button" class="chip sym" data-sym="${s}">${s}</button>`).join("");
+$("#symChips").onclick=ev=>{const b=ev.target.closest("[data-sym]");if(!b)return;const ta=$("#say");ta.value=(ta.value.trim()?ta.value.trim()+", ":"")+b.dataset.sym;ta.focus()};
+document.querySelectorAll(".sev").forEach(b=>b.onclick=()=>{sev=sev===+b.dataset.sev?null:+b.dataset.sev;document.querySelectorAll(".sev").forEach(x=>x.classList.toggle("active",+x.dataset.sev===sev))});
+$("#phaseChips").onclick=async ev=>{const b=ev.target.closest("[data-phase]");if(!b)return;const p=b.dataset.phase;
+  if(bleedOf(viewDate)===p)return;
+  await setBleed(viewDate,p); toast(p==="ninguno"?"Día marcado sin sangrado":"Sangrado "+p+" marcado para "+(viewDate===todayStr()?"hoy":viewDate))};
+$("#prevDay").onclick=()=>{viewDate=addDays(viewDate,-1);render()};
+$("#nextDay").onclick=()=>{if(viewDate<todayStr()){viewDate=addDays(viewDate,1);render()}};
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+b.dataset.view));if(b.dataset.view==="analisis")analyze()});
+["#period","#win","#phaseFilter"].forEach(s=>$(s).onchange=analyze);
+$("#reportBtn").onclick=report;
+if(navigator.share){$("#shareBtn").hidden=false;$("#shareBtn").onclick=shareReport}
+$("#exportBtn").onclick=exportCsv;
+$("#backupBtn").onclick=backup;
+$("#restoreIn").onchange=ev=>{if(ev.target.files[0])restore(ev.target.files[0]);ev.target.value=""};
+$("#autoMic").checked=!!ls("autoMic");
+$("#autoMic").onchange=ev=>{ls("autoMic",ev.target.checked);toast(ev.target.checked?"La app va a escuchar al abrirse (si el navegador lo permite).":"Escucha automática desactivada.")};
+
+// ---------- boot ----------
+days=ls("days")||{};
+render(); setupVoice();
+const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+if(!standalone)$("#installHint").hidden=false;
+if(ls("autoMic")&&startListening)setTimeout(startListening,400);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){render();if(ls("autoMic")&&startListening)setTimeout(startListening,400)}});
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+})();
+</script>
+</body>
+</html>
