@@ -282,7 +282,7 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
       <div class="ctl"><button class="btn" id="exportBtn" type="button">Exportar CSV</button><button class="btn" id="backupBtn" type="button">Respaldo (JSON)</button><label class="btn">Restaurar <input type="file" id="restoreIn" accept="application/json" class="sr"></label></div>
       <div class="setrow"><label><input type="checkbox" id="autoMic"> Escuchar apenas se abre la app</label></div>
       <div class="small muted" id="installHint" hidden>Para tenerla como app: menú del navegador → <b>Agregar a pantalla de inicio</b>.</div>
-      <div class="small muted" style="margin-top:.6rem">Versión 2.1 · semáforos H y F basados en la lista SIGHI (histamina) y en Monash (FODMAP). Son orientativos: cada persona tolera distinto.</div>
+      <div class="small muted" style="margin-top:.6rem">Versión 2.2 · semáforos H y F basados en la lista SIGHI (histamina) y en Monash (FODMAP). Son orientativos: cada persona tolera distinto.</div>
     </div>
   </section>
 </div>
@@ -322,14 +322,14 @@ const SLEEPS=[[1,"muy mal"],[2,"mal"],[3,"regular"],[4,"bien"],[5,"muy bien"]];
 const SYMPTOMS=[
  [/hinch|inflamad|panza dura|distensi/,"hinchazón"],
  [/\bgases?\b|flatul|eruct/,"gases"],
- [/dolor (de )?(panza|abdom|est[óo]mago|vientre)|c[óo]lic|retorcij|dolor abdominal/,"dolor abdominal"],
+ [/dolor (de )?(panza|abdom|est[óo]mago|vientre|barriga)|duele (la )?(panza|barriga|el est[óo]mago)|c[óo]lic|retorcij|dolor abdominal/,"dolor abdominal"],
  [/dolor p[ée]lvic|dolor de ovari|dolor en (la )?pelvis/,"dolor pélvico"],
  [/diarrea|flojo|suelt/,"diarrea"],
  [/estre[ñn]i|constipa|no pude ir/,"estreñimiento"],
  [/n[áa]usea|ganas de vomitar|vomit/,"náuseas"],
  [/reflujo|acidez|ardor/,"reflujo"],
  [/picaz|pic[óo]n|urticaria|ronch|sarpullido|comez/,"picazón"],
- [/dolor de cabeza|migra[ñn]|jaqueca|cefalea/,"dolor de cabeza"],
+ [/dolor de cabeza|duele la cabeza|migra[ñn]|jaqueca|cefalea/,"dolor de cabeza"],
  [/cansanci|fatiga|agotad|sin energ/,"fatiga"],
  [/congesti|moco|nariz tapada|estornud|rinitis/,"congestión"],
  [/palpitac|taquicard/,"palpitaciones"],
@@ -503,6 +503,10 @@ function parse(text,baseDate){
   if(syms.length||WAKE_RE.test(n)||/me siento|me duele|tengo|siento|molest|malestar|dolor/.test(n)){
     return {kind:"sintoma",items:syms.length?syms:[cleanItem(raw.replace(/^(tengo|siento|me siento|me duele|me levant[ée] con|me despert[ée] con)\s+/i,""))],text:raw,t:at,sev:s||null,wake:WAKE_RE.test(n)||undefined};
   }
+  // sin verbo pero con algún alimento conocido: es comida igual
+  {const items=splitItems(raw.replace(/\ba las \d{1,2}([:.h]\d{2})?/i,"").replace(/\bhace \d+ ?(h|horas?|min|minutos)/i,"").replace(/\bayer\b/i,""));
+   if(items.length&&items.some(i=>{const l=foodLevels(i);return l.h||l.f})||/\b(ensalada|pollo|carne|pescado|arroz|papa|verdura|fruta|sopa|guiso|tarta|yogur|cafe|te\b|mate|agua)/.test(n)){
+     return {kind:"comida",items:items.length?items:[cleanItem(raw)],text:raw,t:at};}}
   return {kind:"nota",items:[raw.length>40?raw.slice(0,40)+"…":raw],text:raw,t:at};
 }
 
@@ -682,27 +686,38 @@ let startListening=null;
 function setupVoice(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition; const btn=$("#micBtn");
   if(!SR){btn.hidden=true;$("#micHint").innerHTML="Este navegador no tiene reconocimiento de voz: escribí en el campo o usá el <b>micrófono del teclado</b>.";return}
-  let rec=null, on=false;
+  let rec=null, on=false, done=false, guard=null;
+  const stopRec=()=>{try{rec&&rec.stop()}catch(e){}try{rec&&rec.abort&&rec.abort()}catch(e){}};
+  const reset=()=>{on=false;clearTimeout(guard);btn.classList.remove("listening");btn.textContent="🎤";$("#say").placeholder="Escribí o dictá: comí ensalada con pollo y arroz"};
   startListening=()=>{
-    if(on){try{rec.stop()}catch(e){}return}
-    try{rec=new SR();rec.lang="es-UY";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
-      rec.onstart=()=>{on=true;btn.classList.add("listening");btn.textContent="■";$("#say").placeholder="Escuchando…"};
-      rec.onresult=ev=>{let s="";for(const r of ev.results)s+=r[0].transcript;$("#say").value=s;if(ev.results[ev.results.length-1].isFinal){setTimeout(()=>save(),250)}};
-      rec.onerror=ev=>{on=false;btn.classList.remove("listening");btn.textContent="🎤";
+    if(on){stopRec();reset();return}
+    try{rec=new SR();rec.lang="es-UY";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;done=false;
+      rec.onstart=()=>{on=true;btn.classList.add("listening");btn.textContent="■";$("#say").placeholder="Escuchando…";
+        clearTimeout(guard);guard=setTimeout(()=>{if(on){stopRec();reset();if($("#say").value.trim()&&!done){done=true;save()}}},15000)};
+      rec.onresult=ev=>{if(done)return;let s="";for(const r of ev.results)s+=r[0].transcript;$("#say").value=s;
+        if(ev.results[ev.results.length-1].isFinal){done=true;stopRec();reset();setTimeout(()=>save(),150)}};
+      rec.onerror=ev=>{reset();
         if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){toast("Permiso de micrófono denegado. Habilitalo en los ajustes del navegador o escribí.");$("#say").focus()}
         else if(ev.error==="no-speech"){toast("No escuché nada. Probá de nuevo o escribí.")}};
-      rec.onend=()=>{on=false;btn.classList.remove("listening");btn.textContent="🎤";$("#say").placeholder="Escribí o dictá: comí ensalada con pollo y arroz"};
+      rec.onend=()=>{reset()};
       rec.start();
-    }catch(e){toast("No se pudo iniciar el micrófono.")}
+    }catch(e){reset();toast("No se pudo iniciar el micrófono.")}
   };
   btn.onclick=startListening;
 }
 
 // ---------- events ----------
+let saving=false, lastSave={text:"",ts:0};
 async function save(){
+  if(saving)return;
   const text=$("#say").value.trim(); if(!text)return;
-  const e=parse(text,viewDate); await addEntry(e);
-  $("#say").value=""; sev=null; document.querySelectorAll(".sev").forEach(b=>b.classList.remove("active")); $("#sayTime").value="";
+  if(norm(text)===norm(lastSave.text)&&Date.now()-lastSave.ts<5000){$("#say").value="";return}
+  saving=true;
+  try{
+    lastSave={text,ts:Date.now()};
+    const e=parse(text,viewDate); await addEntry(e);
+    $("#say").value=""; sev=null; document.querySelectorAll(".sev").forEach(b=>b.classList.remove("active")); $("#sayTime").value="";
+  }finally{saving=false}
 }
 $("#saveBtn").onclick=save;
 $("#say").addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.preventDefault();save()}});
