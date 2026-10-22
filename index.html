@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Miga, mi bitácora</title>
-<meta name="theme-color" content="#5d3b6b" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17151d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fbf5ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1e1619" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -17,36 +17,36 @@
 <style>
 /* Layout: one column, phone-first. Input dock at top, day timeline below, bottom tab bar. */
 :root{
-  --bg:#f4f3f8; --panel:#ffffff; --fg:#241f2b; --muted:#6c657a; --line:#e2dfea;
-  --accent:#5d3b6b; --accent-ink:#ffffff;
-  --food:#4f7d55; --food-soft:#e3efe4;
-  --sym:#b1465f; --sym-soft:#f8e3e8;
-  --cycle:#b7772a; --cycle-soft:#f9ecd9;
-  --sleep:#4a5f9a; --sleep-soft:#e3e8f7;
-  --note:#4a6f9a; --note-soft:#e1ebf5;
-  --warn:#8a5a00; --warn-soft:#fff2d6;
+  --bg:#fbf5ee; --panel:#fffdf9; --fg:#4a2a36; --muted:#8a6a74; --line:#eadfd8;
+  --accent:#7a4457; --accent-ink:#ffffff; --rose:#ebada9; --rose-soft:#f7e1de;
+  --food:#5f8460; --food-soft:#e4ede1;
+  --sym:#b8505f; --sym-soft:#f8e1e1;
+  --cycle:#b77a3a; --cycle-soft:#f7ead8;
+  --sleep:#5a6a9a; --sleep-soft:#e7e9f4;
+  --note:#5a7a9a; --note-soft:#e3ecf3;
+  --warn:#8a5a00; --warn-soft:#fbefd4;
   --ok:#3f8a4f; --ok-soft:#dff0e2; --mid:#c28a10; --mid-soft:#fbefcf; --bad:#c3413f; --bad-soft:#f9dcdb;
   --display:"Fraunces",Georgia,"Times New Roman",serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
-  --bg:#17151d; --panel:#211e2a; --fg:#ebe7f1; --muted:#a79fb6; --line:#332e3f;
-  --accent:#c9a6d8; --accent-ink:#1d1522;
-  --food:#8fc495; --food-soft:#213126;
-  --sym:#ec8aa0; --sym-soft:#3a2129;
+  --bg:#1e1619; --panel:#2a1f24; --fg:#f3e9e6; --muted:#b59aa2; --line:#3d2f35;
+  --accent:#ebada9; --accent-ink:#2a1218; --rose:#ebada9; --rose-soft:#3f2a2c;
+  --food:#9ac79a; --food-soft:#23332a;
+  --sym:#ef8f9a; --sym-soft:#3f2229;
   --cycle:#e5a85a; --cycle-soft:#3a2d1b;
-  --sleep:#9eb0e8; --sleep-soft:#222a44;
+  --sleep:#a3b2e6; --sleep-soft:#252b45;
   --note:#8fb4df; --note-soft:#1f2b3a;
   --warn:#f0c061; --warn-soft:#3a3015;
   --ok:#7fcf8f; --ok-soft:#1f3a26; --mid:#f0c35a; --mid-soft:#3d3418; --bad:#f08a86; --bad-soft:#44221f;
   color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#17151d; --panel:#211e2a; --fg:#ebe7f1; --muted:#a79fb6; --line:#332e3f;
-  --accent:#c9a6d8; --accent-ink:#1d1522;
-  --food:#8fc495; --food-soft:#213126;
-  --sym:#ec8aa0; --sym-soft:#3a2129;
+  --bg:#1e1619; --panel:#2a1f24; --fg:#f3e9e6; --muted:#b59aa2; --line:#3d2f35;
+  --accent:#ebada9; --accent-ink:#2a1218; --rose:#ebada9; --rose-soft:#3f2a2c;
+  --food:#9ac79a; --food-soft:#23332a;
+  --sym:#ef8f9a; --sym-soft:#3f2229;
   --cycle:#e5a85a; --cycle-soft:#3a2d1b;
-  --sleep:#9eb0e8; --sleep-soft:#222a44;
+  --sleep:#a3b2e6; --sleep-soft:#252b45;
   --note:#8fb4df; --note-soft:#1f2b3a;
   --warn:#f0c061; --warn-soft:#3a3015;
   --ok:#7fcf8f; --ok-soft:#1f3a26; --mid:#f0c35a; --mid-soft:#3d3418; --bad:#f08a86; --bad-soft:#44221f;
@@ -76,7 +76,7 @@ input[type=number]{font-variant-numeric:tabular-nums}
 
 header.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:1.1rem .8rem}
 header.top .brand{display:flex;align-items:center;gap:.7rem}
-header.top .logo{width:46px;height:46px;border-radius:12px;object-fit:cover;background:var(--accent)}
+header.top .logo{width:52px;height:52px;border-radius:50%;object-fit:cover}
 header.top .date{font-variant-numeric:tabular-nums;text-align:right}
 
 /* Views */
@@ -91,7 +91,7 @@ header.top .date{font-variant-numeric:tabular-nums;text-align:right}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border-radius:12px;padding:.6rem .95rem;font-weight:600;border:1px solid var(--line);background:var(--panel)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn.danger{color:var(--bad);border-color:var(--bad)}
-.btn.mic{width:56px;padding:0;font-size:1.5rem;border-radius:14px}
+.btn.mic{width:56px;padding:0;font-size:1.5rem;border-radius:14px;background:var(--rose-soft);border-color:var(--rose)}
 .btn.mic.listening{background:var(--sym-soft);border-color:var(--sym);color:var(--sym);animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--sym) 40%,transparent)}50%{box-shadow:0 0 0 8px transparent}}
 @media (prefers-reduced-motion:reduce){.btn.mic.listening{animation:none}}
@@ -212,7 +212,7 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
   <header class="top">
     <div class="brand">
       <img class="logo" id="logo" src="logo.png" alt="" onerror="this.hidden=true">
-      <div><h1>Miga</h1><div class="eyebrow">mi bitácora</div></div>
+      <div><h1>miga</h1><div class="eyebrow">tu bitácora personal</div></div>
     </div>
     <div class="date small muted" id="hdrDate"></div>
   </header>
@@ -282,7 +282,7 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
       <div class="ctl"><button class="btn" id="exportBtn" type="button">Exportar CSV</button><button class="btn" id="backupBtn" type="button">Respaldo (JSON)</button><label class="btn">Restaurar <input type="file" id="restoreIn" accept="application/json" class="sr"></label></div>
       <div class="setrow"><label><input type="checkbox" id="autoMic"> Escuchar apenas se abre la app</label></div>
       <div class="small muted" id="installHint" hidden>Para tenerla como app: menú del navegador → <b>Agregar a pantalla de inicio</b>.</div>
-      <div class="small muted" style="margin-top:.6rem">Versión 2 · semáforos H y F basados en la lista SIGHI (histamina) y en Monash (FODMAP). Son orientativos: cada persona tolera distinto.</div>
+      <div class="small muted" style="margin-top:.6rem">Versión 2.1 · semáforos H y F basados en la lista SIGHI (histamina) y en Monash (FODMAP). Son orientativos: cada persona tolera distinto.</div>
     </div>
   </section>
 </div>
