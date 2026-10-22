@@ -1,7 +1,7 @@
 {
-  "name": "Bitácora Digestiva",
-  "short_name": "Bitácora",
-  "description": "Diario por voz de comidas, síntomas digestivos y sangrado.",
+  "name": "Miga, mi bitácora",
+  "short_name": "Miga",
+  "description": "Diario por voz o texto de comidas, síntomas digestivos, descanso y sangrado, con semáforos de histamina y FODMAP.",
   "lang": "es",
   "start_url": "./index.html",
   "scope": "./",

@@ -1,5 +1,5 @@
-// Bitácora Digestiva — cache-first service worker so the app opens without connection.
-const CACHE = "bitacora-v1";
+// Miga, mi bitácora — service worker. Bump CACHE on every release so phones pick up the new version.
+const CACHE = "miga-v2";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-512-maskable.png"];
 
 self.addEventListener("install", e => {
@@ -10,12 +10,19 @@ self.addEventListener("activate", e => {
 });
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  const url = new URL(e.request.url);
+  const isPage = url.origin === self.location.origin && (url.pathname.endsWith("/") || url.pathname.endsWith("index.html"));
+  if (isPage) {
+    // network first for the page itself, so an update shows up on the next open; cache if offline
+    e.respondWith(fetch(e.request).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return res; }).catch(() => caches.match(e.request).then(h => h || caches.match("./index.html"))));
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-      if (res.ok && (e.request.url.startsWith(self.location.origin) || /fonts\.(googleapis|gstatic)\.com/.test(e.request.url))) {
+      if (res.ok && (url.origin === self.location.origin || /fonts\.(googleapis|gstatic)\.com/.test(url.host))) {
         const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy));
       }
       return res;
-    }).catch(() => caches.match("./index.html")))
+    }).catch(() => undefined))
   );
 });

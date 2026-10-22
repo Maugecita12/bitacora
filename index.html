@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Bitácora Digestiva</title>
+<title>Miga, mi bitácora</title>
 <meta name="theme-color" content="#5d3b6b" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#17151d" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Bitácora">
+<meta name="apple-mobile-web-app-title" content="Miga">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -22,8 +22,10 @@
   --food:#4f7d55; --food-soft:#e3efe4;
   --sym:#b1465f; --sym-soft:#f8e3e8;
   --cycle:#b7772a; --cycle-soft:#f9ecd9;
+  --sleep:#4a5f9a; --sleep-soft:#e3e8f7;
   --note:#4a6f9a; --note-soft:#e1ebf5;
   --warn:#8a5a00; --warn-soft:#fff2d6;
+  --ok:#3f8a4f; --ok-soft:#dff0e2; --mid:#c28a10; --mid-soft:#fbefcf; --bad:#c3413f; --bad-soft:#f9dcdb;
   --display:"Fraunces",Georgia,"Times New Roman",serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
@@ -33,8 +35,10 @@
   --food:#8fc495; --food-soft:#213126;
   --sym:#ec8aa0; --sym-soft:#3a2129;
   --cycle:#e5a85a; --cycle-soft:#3a2d1b;
+  --sleep:#9eb0e8; --sleep-soft:#222a44;
   --note:#8fb4df; --note-soft:#1f2b3a;
   --warn:#f0c061; --warn-soft:#3a3015;
+  --ok:#7fcf8f; --ok-soft:#1f3a26; --mid:#f0c35a; --mid-soft:#3d3418; --bad:#f08a86; --bad-soft:#44221f;
   color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#17151d; --panel:#211e2a; --fg:#ebe7f1; --muted:#a79fb6; --line:#332e3f;
@@ -42,22 +46,24 @@
   --food:#8fc495; --food-soft:#213126;
   --sym:#ec8aa0; --sym-soft:#3a2129;
   --cycle:#e5a85a; --cycle-soft:#3a2d1b;
+  --sleep:#9eb0e8; --sleep-soft:#222a44;
   --note:#8fb4df; --note-soft:#1f2b3a;
   --warn:#f0c061; --warn-soft:#3a3015;
+  --ok:#7fcf8f; --ok-soft:#1f3a26; --mid:#f0c35a; --mid-soft:#3d3418; --bad:#f08a86; --bad-soft:#44221f;
   color-scheme:dark }
 
 *{box-sizing:border-box}
-html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
 :root{padding-top:env(safe-area-inset-top,0px)}
 img{max-width:100%}
 [hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:0 calc(84px + env(safe-area-inset-bottom,0px))}
+  padding-top:0;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:560px;margin:0 auto}
 h1,h2,h3{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0}
-h1{font-size:1.9rem;letter-spacing:-.01em;font-variation-settings:"SOFT" 100}
+h1{font-size:2rem;letter-spacing:-.01em;font-variation-settings:"SOFT" 100;line-height:1}
 h2{font-size:1.25rem}
 h3{font-size:1.05rem}
 .eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -68,7 +74,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 input,textarea,select{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.55rem .7rem}
 input[type=number]{font-variant-numeric:tabular-nums}
 
-header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;padding-block:1.4rem .9rem}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:1.1rem .8rem}
+header.top .brand{display:flex;align-items:center;gap:.7rem}
+header.top .logo{width:46px;height:46px;border-radius:12px;object-fit:cover;background:var(--accent)}
 header.top .date{font-variant-numeric:tabular-nums;text-align:right}
 
 /* Views */
@@ -77,21 +85,22 @@ header.top .date{font-variant-numeric:tabular-nums;text-align:right}
 
 /* Input dock */
 .dock{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem;box-shadow:0 8px 30px -22px rgba(30,20,40,.35)}
-.dock label{display:block;font-family:var(--display);font-size:1.15rem;margin-bottom:.55rem}
+.dock label.q{display:block;font-family:var(--display);font-size:1.15rem;margin-bottom:.55rem}
 .say{display:flex;gap:.5rem;align-items:stretch}
 .say textarea{flex:1;min-width:0;resize:none;min-height:56px;font-size:1.05rem;border-radius:14px;padding:.75rem .9rem}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border-radius:12px;padding:.6rem .95rem;font-weight:600;border:1px solid var(--line);background:var(--panel)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
 .btn.mic{width:56px;padding:0;font-size:1.5rem;border-radius:14px}
 .btn.mic.listening{background:var(--sym-soft);border-color:var(--sym);color:var(--sym);animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--sym) 40%,transparent)}50%{box-shadow:0 0 0 8px transparent}}
 @media (prefers-reduced-motion:reduce){.btn.mic.listening{animation:none}}
 .hint{margin-top:.6rem;font-size:.85rem;color:var(--muted)}
-.hint kbd{font:inherit;border:1px solid var(--line);border-radius:6px;padding:0 .35rem}
-.dockrow{display:flex;justify-content:space-between;align-items:center;gap:.6rem;margin-top:.7rem;flex-wrap:wrap}
+.dockrow{display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;margin-top:.7rem;flex-wrap:wrap}
 .chips{display:flex;flex-wrap:wrap;gap:.4rem}
 .chip{border:1px solid var(--line);border-radius:999px;padding:.3rem .7rem;font-size:.85rem;background:var(--panel)}
 .chip.sym{border-color:color-mix(in srgb,var(--sym) 50%,var(--line));color:var(--sym)}
+.chip.slp{border-color:color-mix(in srgb,var(--sleep) 50%,var(--line));color:var(--sleep)}
 .chip.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 details.more{margin-top:.6rem}
 details.more summary{cursor:pointer;color:var(--muted);font-size:.85rem;list-style:none}
@@ -102,43 +111,67 @@ details.more[open] summary::before{content:"– ";}
 .sev.active{background:var(--sym);color:#fff;border-color:var(--sym)}
 
 /* Status toast */
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:.6rem 1rem;border-radius:999px;font-size:.9rem;z-index:20;max-width:90%;box-shadow:0 6px 24px -8px rgba(0,0,0,.4)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:.6rem 1rem;border-radius:999px;font-size:.9rem;z-index:40;max-width:90%;box-shadow:0 6px 24px -8px rgba(0,0,0,.4)}
 .toast button{text-decoration:underline;margin-left:.6rem;font-weight:600}
 
-/* Cycle card */
-.cycle{margin-top:.9rem;background:var(--cycle-soft);border-radius:16px;padding:.9rem 1rem;display:flex;gap:.8rem;align-items:center;justify-content:space-between;flex-wrap:wrap}
-.cycle .big{font-family:var(--display);font-size:1.3rem}
-.cycle .phases{display:flex;gap:.3rem;flex-wrap:wrap}
+/* Day cards: bleeding + sleep */
+.daycards{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.9rem}
+@media (max-width:420px){.daycards{grid-template-columns:1fr}}
+.cycle{background:var(--cycle-soft);border-radius:16px;padding:.8rem .9rem;min-width:0}
+.cycle .big{font-family:var(--display);font-size:1.15rem;margin:.1rem 0}
+.cycle .phases{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.5rem}
+.cycle .chip{font-size:.8rem;padding:.25rem .6rem}
 .cycle .chip.active{background:var(--cycle);border-color:var(--cycle);color:#fff}
-.cycle details{width:100%}
-.cycle details summary{font-size:.82rem;color:var(--muted);cursor:pointer}
-.cycle .cfg{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.5rem;font-size:.9rem}
-.cycle .cfg input{width:9.5rem}
+.sleep{background:var(--sleep-soft)}
+.sleep .chip.active{background:var(--sleep);border-color:var(--sleep);color:#fff}
+
+/* Semáforos */
+.lights{display:flex;gap:.5rem;align-items:center;margin-top:.9rem;flex-wrap:wrap}
+.light{display:inline-flex;align-items:center;gap:.45rem;border-radius:999px;padding:.35rem .8rem .35rem .45rem;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:.9rem}
+.light .dot{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;color:#fff;font-size:.9rem}
+.light.ok .dot{background:var(--ok)} .light.mid .dot{background:var(--mid)} .light.bad .dot{background:var(--bad)}
+.light.ok{background:var(--ok-soft)} .light.mid{background:var(--mid-soft)} .light.bad{background:var(--bad-soft)}
+.light .n{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:500}
+.lightinfo{display:none;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.7rem .9rem;margin-top:.5rem;font-size:.88rem}
+.lightinfo.open{display:block}
+.lightinfo b{font-family:var(--display)}
+.lightinfo ul{margin:.25rem 0 .5rem 1rem;padding:0}
+.tag{display:inline-block;font-size:.65rem;font-weight:700;border-radius:4px;padding:0 .3rem;margin-left:.25rem;vertical-align:middle;color:#fff}
+.tag.h2{background:var(--bad)} .tag.h1{background:var(--mid)} .tag.f2{background:var(--bad)} .tag.f1{background:var(--mid)}
 
 /* Timeline */
-.daynav{display:flex;align-items:center;justify-content:space-between;margin:1.4rem 0 .6rem}
+.daynav{display:flex;align-items:center;justify-content:space-between;margin:1.2rem 0 .6rem}
 .daynav .title{font-family:var(--display);font-size:1.2rem}
 .daynav button{padding:.3rem .6rem;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 .tl{display:flex;flex-direction:column;gap:.5rem}
-.entry{display:grid;grid-template-columns:3.1rem 4px 1fr;gap:.6rem;align-items:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.65rem .8rem}
+.entry{display:grid;grid-template-columns:3.1rem 4px 1fr;gap:.6rem;align-items:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.65rem .8rem;cursor:pointer;text-align:left;width:100%}
+.entry:active{background:var(--bg)}
 .entry .t{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem;padding-top:.15rem}
 .entry .bar{align-self:stretch;border-radius:2px;background:var(--line)}
-.entry.comida .bar{background:var(--food)} .entry.sintoma .bar{background:var(--sym)} .entry.ciclo .bar{background:var(--cycle)} .entry.nota .bar{background:var(--note)}
+.entry.comida .bar{background:var(--food)} .entry.sintoma .bar{background:var(--sym)} .entry.ciclo .bar{background:var(--cycle)} .entry.nota .bar{background:var(--note)} .entry.descanso .bar{background:var(--sleep)}
 .entry .body{min-width:0}
 .entry .kind{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
-.entry.comida .kind{color:var(--food)} .entry.sintoma .kind{color:var(--sym)} .entry.ciclo .kind{color:var(--cycle)} .entry.nota .kind{color:var(--note)}
+.entry.comida .kind{color:var(--food)} .entry.sintoma .kind{color:var(--sym)} .entry.ciclo .kind{color:var(--cycle)} .entry.nota .kind{color:var(--note)} .entry.descanso .kind{color:var(--sleep)}
 .entry .items{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.25rem}
-.entry .items span{border-radius:7px;padding:.1rem .5rem;font-size:.9rem}
-.entry.comida .items span{background:var(--food-soft)} .entry.sintoma .items span{background:var(--sym-soft)} .entry.ciclo .items span{background:var(--cycle-soft)} .entry.nota .items span{background:var(--note-soft)}
-.entry .raw{color:var(--muted);font-size:.82rem;margin-top:.25rem;overflow-wrap:anywhere}
-.entry .acts{display:flex;gap:.8rem;margin-top:.35rem;font-size:.8rem}
-.entry .acts button{color:var(--muted);text-decoration:underline}
+.entry .items span.it{border-radius:7px;padding:.1rem .5rem;font-size:.9rem}
+.entry.comida .items span.it{background:var(--food-soft)} .entry.sintoma .items span.it{background:var(--sym-soft)} .entry.ciclo .items span.it{background:var(--cycle-soft)} .entry.nota .items span.it{background:var(--note-soft)} .entry.descanso .items span.it{background:var(--sleep-soft)}
+.entry .raw{color:var(--muted);font-size:.82rem;margin-top:.25rem;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .empty{border:1px dashed var(--line);border-radius:14px;padding:1.1rem;color:var(--muted);text-align:center}
-.editbox{display:grid;gap:.45rem;margin-top:.4rem}
-.editbox .row{display:flex;gap:.4rem;flex-wrap:wrap;align-items:center}
-.editbox input[type=text]{flex:1;min-width:0}
-.editbox input[type=time]{width:7.5rem}
-.editbox select{padding:.4rem .5rem}
+
+/* Detail sheet */
+.overlay{position:fixed;inset:0;background:rgba(20,12,28,.45);z-index:30;display:none;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{background:var(--panel);color:var(--fg);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem}
+.sheet .grid{display:grid;gap:.6rem}
+.sheet label{display:grid;gap:.25rem;font-size:.82rem;color:var(--muted)}
+.sheet input,.sheet select,.sheet textarea{width:100%;font-size:1rem;color:var(--fg)}
+.sheet textarea{min-height:80px;resize:vertical}
+.sheet .row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.sheet .acts{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;justify-content:space-between}
+.sheet .pills{display:flex;gap:.35rem;flex-wrap:wrap}
+.sheet .pills .chip.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.sheet .sem{display:flex;gap:.4rem;flex-wrap:wrap;font-size:.85rem;margin-top:.2rem}
 
 /* Analysis */
 .ctl{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin:.7rem 0 1rem}
@@ -159,12 +192,10 @@ td.num{text-align:right;white-space:nowrap}
 .lift{display:inline-block;border-radius:6px;padding:0 .4rem;font-weight:600;font-size:.82rem}
 .lift.hi{background:var(--sym-soft);color:var(--sym)} .lift.lo{background:var(--food-soft);color:var(--food)} .lift.mid{background:var(--bg);color:var(--muted)}
 .sublist{color:var(--muted);font-size:.8rem}
-.report{white-space:normal;line-height:1.55}
-.report h3{margin:.8rem 0 .25rem}
-.report ul{margin:.2rem 0 .5rem 1.1rem;padding:0}
-.report p{margin:.3rem 0}
 .note{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:.55rem .8rem;font-size:.85rem;margin-top:.5rem}
-.banner{background:var(--note-soft);color:var(--note);border-radius:10px;padding:.55rem .8rem;font-size:.85rem;margin-bottom:.8rem}
+.strip{display:flex;gap:3px;margin-top:.5rem;flex-wrap:wrap}
+.strip i{display:block;width:14px;height:14px;border-radius:3px;background:var(--line)}
+.strip i.ok{background:var(--ok)} .strip i.mid{background:var(--mid)} .strip i.bad{background:var(--bad)}
 
 /* Tab bar */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:.4rem;background:var(--panel);border-top:1px solid var(--line);
@@ -179,20 +210,22 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
 <body>
 <div class="wrap">
   <header class="top">
-    <div><div class="eyebrow">Diario de comidas y síntomas</div><h1>Bitácora Digestiva</h1></div>
+    <div class="brand">
+      <img class="logo" id="logo" src="logo.png" alt="" onerror="this.hidden=true">
+      <div><h1>Miga</h1><div class="eyebrow">mi bitácora</div></div>
+    </div>
     <div class="date small muted" id="hdrDate"></div>
   </header>
-
 
   <!-- DIARIO -->
   <section class="view active" id="view-diario">
     <div class="dock">
-      <label for="say">¿Qué comiste o cómo te sentís?</label>
+      <label class="q" for="say">¿Qué comiste, cómo te sentís, cómo dormiste?</label>
       <div class="say">
-        <textarea id="say" rows="2" placeholder="comí ensalada con pollo y arroz" autocomplete="off" enterkeyhint="send"></textarea>
+        <textarea id="say" rows="2" placeholder="Escribí o dictá: comí ensalada con pollo y arroz" autocomplete="off" enterkeyhint="send"></textarea>
         <button class="btn mic" id="micBtn" type="button" aria-label="Dictar" title="Dictar">🎤</button>
       </div>
-      <div class="hint" id="micHint">Tocá el campo y usá el micrófono del teclado del celular para dictar. Decí por ejemplo: <em>comí tostadas con palta</em>, <em>hinchazón fuerte</em>, <em>manché un poco</em>.</div>
+      <div class="hint" id="micHint">Escribí en el campo o tocá 🎤 y hablá. Ejemplos: <em>comí tostadas con palta</em>, <em>hinchazón fuerte</em>, <em>dormí mal</em>, <em>manché un poco</em>.</div>
       <div class="dockrow">
         <div class="chips" id="symChips"></div>
         <button class="btn primary" id="saveBtn" type="button">Registrar</button>
@@ -206,9 +239,18 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
       </details>
     </div>
 
-    <div class="cycle" id="cycleCard">
-      <div><div class="eyebrow">Sangrado</div><div class="big" id="cycleBig">Sin marcar</div><div class="small muted" id="cycleSub">Marcá cómo fue el día, o decí “sangrado leve” o “manché”.</div></div>
-      <div class="phases" id="phaseChips"></div>
+    <div class="lights" id="lights"></div>
+    <div class="lightinfo" id="lightInfo"></div>
+
+    <div class="daycards">
+      <div class="cycle" id="cycleCard">
+        <div class="eyebrow">Sangrado</div><div class="big" id="cycleBig">Sin marcar</div><div class="small muted" id="cycleSub">Marcá el día o decí “manché”.</div>
+        <div class="phases" id="phaseChips"></div>
+      </div>
+      <div class="cycle sleep" id="sleepCard">
+        <div class="eyebrow">Descanso de anoche</div><div class="big" id="sleepBig">Sin marcar</div><div class="small muted" id="sleepSub">Marcá cómo dormiste o decí “dormí mal”.</div>
+        <div class="phases" id="sleepChips"></div>
+      </div>
     </div>
 
     <div class="daynav">
@@ -229,7 +271,7 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
     <div id="analysis"></div>
     <div class="card">
       <h2>Informe con Claude</h2>
-      <p class="small muted">Arma un texto con los registros del período y las preguntas para Claude (alimentos sospechosos para histaminosis, lactosa e IMO, días con y sin sangrado). Lo copiás y lo pegás en el chat de Claude.</p>
+      <p class="small muted">Arma un texto con los registros del período y las preguntas para Claude (alimentos sospechosos para histaminosis, lactosa e IMO, días con y sin sangrado, descanso). Lo copiás y lo pegás en el chat de Claude.</p>
       <div class="ctl"><button class="btn primary" id="reportBtn" type="button">Copiar para Claude</button><button class="btn" id="shareBtn" type="button" hidden>Compartir</button></div>
       <textarea class="copybox" id="reportText" readonly hidden aria-label="Texto para Claude"></textarea>
       <div class="note">Esto es un registro personal para conversar con tu médica o nutricionista; no reemplaza una consulta.</div>
@@ -240,6 +282,7 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
       <div class="ctl"><button class="btn" id="exportBtn" type="button">Exportar CSV</button><button class="btn" id="backupBtn" type="button">Respaldo (JSON)</button><label class="btn">Restaurar <input type="file" id="restoreIn" accept="application/json" class="sr"></label></div>
       <div class="setrow"><label><input type="checkbox" id="autoMic"> Escuchar apenas se abre la app</label></div>
       <div class="small muted" id="installHint" hidden>Para tenerla como app: menú del navegador → <b>Agregar a pantalla de inicio</b>.</div>
+      <div class="small muted" style="margin-top:.6rem">Versión 2 · semáforos H y F basados en la lista SIGHI (histamina) y en Monash (FODMAP). Son orientativos: cada persona tolera distinto.</div>
     </div>
   </section>
 </div>
@@ -250,11 +293,32 @@ nav.tabs button.active{background:var(--accent);color:var(--accent-ink)}
 </nav>
 <div id="toast" class="toast" hidden></div>
 
+<!-- Detail / edit sheet -->
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="head"><h2 id="sheetTitle">Registro</h2><button class="btn" id="sheetClose" type="button">Cerrar</button></div>
+    <div class="grid">
+      <div class="row">
+        <label>Tipo <select id="eKind"><option value="comida">Comida</option><option value="sintoma">Síntoma</option><option value="descanso">Descanso</option><option value="ciclo">Sangrado</option><option value="nota">Nota</option></select></label>
+        <label>Hora <input type="time" id="eTime"></label>
+      </div>
+      <label>Fecha <input type="date" id="eDate"></label>
+      <label>Elementos (separados por coma) <input type="text" id="eItems" autocomplete="off"></label>
+      <div id="eSem" class="sem"></div>
+      <label id="eSevWrap">Intensidad <div class="pills" id="eSev"></div></label>
+      <label id="eQWrap">Calidad del descanso <div class="pills" id="eQ"></div></label>
+      <label>Texto / comentario <textarea id="eText" placeholder="Lo que dijiste o escribiste, y cualquier comentario extra"></textarea></label>
+    </div>
+    <div class="acts"><button class="btn danger" id="eDelete" type="button">Borrar</button><button class="btn primary" id="eSave" type="button">Guardar cambios</button></div>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
 const $=s=>document.querySelector(s);
 const BLEEDS=["ninguno","manchado","leve","moderado","abundante"];
+const SLEEPS=[[1,"muy mal"],[2,"mal"],[3,"regular"],[4,"bien"],[5,"muy bien"]];
 const SYMPTOMS=[
  [/hinch|inflamad|panza dura|distensi/,"hinchazón"],
  [/\bgases?\b|flatul|eruct/,"gases"],
@@ -270,20 +334,82 @@ const SYMPTOMS=[
  [/congesti|moco|nariz tapada|estornud|rinitis/,"congestión"],
  [/palpitac|taquicard/,"palpitaciones"],
  [/mareo|mareada/,"mareo"],
- [/insomnio|no dorm|mal dorm/,"insomnio"],
  [/ansied|irritab|bajón|triste/,"ánimo"],
 ];
 const WAKE_RE=/me levant|me despert|al despertar|al levantarme|de ma[ñn]ana|amanec/;
 const QUICK=["hinchazón","gases","dolor abdominal","diarrea","estreñimiento","náuseas","reflujo","picazón","dolor de cabeza","fatiga"];
 const FOOD_VERBS=/^(com[ií]|desayun[ée]|almorc[ée]|cen[ée]|merend[ée]|tom[ée]|beb[ií]|pico?te[ée]|me com[ií]|me tom[ée]|comida:|comi)\b/;
 const BLEED_RE=/sangr|manch|me vino|me baj[óo]|menstru|\bregla\b|per[ií]odo|periodo|spotting/;
+const SLEEP_RE=/dorm|descans|desvel|trasnoch|insomnio|sue[ñn]o|me acost/;
+
+// ---------- Semáforos: diccionario de alimentos ----------
+// [regex sobre texto normalizado, histamina 0-2, fodmap 0-2]
+// H: 2 = alto en histamina o liberador fuerte (SIGHI 2-3), 1 = moderado / liberador (SIGHI 1).
+// F: 2 = alto FODMAP en porción habitual (Monash rojo), 1 = moderado / depende de la porción.
+const FOODS=[
+ // quesos y lácteos
+ [/parmesan|reggian|sardo|roquefort|queso azul|gorgonzola|brie|camembert|gruyer|provolon|cheddar|manchego|emmental|fontina|queso (duro|curado|rallado|de rallar)|pategras|holanda|dambo/,2,0],
+ [/muzzarella|mozzarella|queso fresco|queso cremoso|queso crema|ricota|cuartirolo|mascarpone|queso port/,1,2],
+ [/\bqueso\b|quesito/,1,0],
+ [/\bleche\b|cafe con leche|cortado|latte|capuch|chocolatada|licuado con leche/,0,2],
+ [/yogur|yoghurt|kefir|leche cultivada/,1,2],
+ [/helado|crema|dulce de leche|manteca|flan|postrecito|arroz con leche/,0,2],
+ // carnes, fiambres, pescados
+ [/jamon crudo|salam|chorizo|morcilla|mortadela|panceta|bondiola|longaniza|cantimpalo|pastrami|fiambre|jamon|salchich|pancho|leberw|pate\b|picadillo|lomito ahumado/,2,0],
+ [/atun|sardin|anchoa|caballa|arenque|salmon ahumado|surimi|kani|pescado (en lata|enlatado|ahumado)/,2,0],
+ [/camaron|langostino|mejillon|calamar|pulpo|marisco|almeja|rabas|paella/,2,0],
+ [/carne picada|hamburguesa|milanesa|carne de ayer|recalentad|sobras|de ayer|guiso de ayer/,1,0],
+ [/cerdo|chancho|costilla de cerdo|matambre/,1,0],
+ [/higado|rinon|achura|mollej|chinchul/,2,0],
+ [/\bhuevo|tortilla|omelet|revuelto/,1,0],
+ // fermentados, condimentos, bebidas
+ [/chucrut|kimchi|kombucha|miso|tempeh|salsa de soja|soya|salsa inglesa|worcest|vinagre|pickles|encurtid|aceituna|alcaparra|mostaza|ketchup|mayonesa|salsa barbacoa|chimichurri/,2,0],
+ [/\bvino|cerveza|birra|champ|espumante|sidra|fernet|whisky|vodka|gin\b|ron\b|licor|trago|cocktail|coctel|aperol|campari/,2,0],
+ [/cafe\b|cafecito|expreso|espresso|capuch|cortado/,1,0],
+ [/te negro|te verde|\bmate\b|matecito|terere|energizante|red bull|monster|cacao|chocolate|brownie|nutella|cocoa/,1,0],
+ [/caldo en cubo|cubito|sopa instant|fideos instant|snack|papas fritas de paquete|chizito|doritos|glutamato|saborizad|salsa de tomate|pure de tomate|tomate (triturado|en lata)|conserva/,2,0],
+ [/picante|aji|chile|jalape|curry|canela|nuez moscada|clavo de olor/,1,0],
+ // vegetales
+ [/tomate|cherry|salsa roja|bolognesa|bolonesa|tuco/,2,0],
+ [/espinaca|acelga/,2,0],
+ [/berenjena/,2,0],
+ [/palta|aguacate|guacamole/,2,1],
+ [/cebolla|cebollin|verdeo|puerro|echalot|chalota|morron|pimiento|aji morron/,0,2],
+ [/\bajo\b|ajos|alioli|provenzal/,0,2],
+ [/coliflor|repollito|bruselas|alcaucil|alcachofa|esparrago|remolacha|hinojo|hongo|champi|portobello|seta|gírgola|girgola/,0,2],
+ [/brocoli|repollo|choclo|maiz|batata|boniato|arveja|chaucha|zapallo|calabaza/,0,1],
+ [/lenteja|garbanzo|poroto|frijol|alubia|habas?\b|soja|tofu|hummus|falafel|legumbre/,1,2],
+ // frutas
+ [/frutilla|fresa|frambuesa|mora|arandano/,2,0],
+ [/naranja|mandarina|pomelo|limon|lima\b|citric|jugo de naranja/,2,0],
+ [/kiwi|anana|pina\b|papaya|mango|maracuya/,2,1],
+ [/banana|platano/,1,1],
+ [/manzana|pera\b|peras|sandia|durazno|damasco|ciruela|cereza|higo|nectarin|caqui|membrillo|jugo de manzana|compota/,0,2],
+ [/pasas|datil|orejon|fruta seca|fruta deshidrat/,1,2],
+ [/uva|melon/,0,1],
+ // cereales, panificados, dulces
+ [/\bpan\b|panes|tostada|medialuna|factura|bizcocho|galletita|galleta|torta|budin|pizza|empanada|tarta|fideos|pasta|noquis|ñoquis|ravioles|lasa[ñn]a|canelon|sorrentino|tallarin|spaghetti|harina|sandwich|sanguche|tortilla de harina|wrap|hamburguesa con pan|pancho|cuscus|bulgur|seitan|centeno|cebada|trigo|cerveza/,0,2],
+ [/avena|granola|cereal/,0,1],
+ [/levadura|extracto de levadura|masa madre/,2,0],
+ [/\bmiel\b|jarabe|agave|sorbitol|xilitol|manitol|maltitol|sin azucar|chicle|caramelo sin azucar|edulcorante/,0,2],
+ [/mani|cacahu|nuez|nueces|castana|cajú|caju|anacardo|pistacho|almendra|avellana/,2,1],
+ [/semilla|chia|lino|sesamo|girasol|zapallo/,0,0],
+ [/jugo|gaseosa|coca|sprite|fanta|refresco/,0,1],
+];
+function foodLevels(item){const n=norm(item);let h=0,f=0;for(const [re,hh,ff] of FOODS){if(re.test(n)){h=Math.max(h,hh);f=Math.max(f,ff)}}return {h,f}}
+function dayLoad(dateStr){
+  const d=days[dateStr];const out={h:0,f:0,hItems:[],fItems:[]};if(!d)return out;
+  for(const e of d.entries){if(e.kind!=="comida")continue;for(const it of e.items){const l=foodLevels(it);if(l.h){out.h+=l.h;out.hItems.push({it,lvl:l.h,t:hm(e.t)})}if(l.f){out.f+=l.f;out.fItems.push({it,lvl:l.f,t:hm(e.t)})}}}
+  return out;
+}
+function level(score){return score>=6?"bad":score>=3?"mid":"ok"}
+const LEVEL_WORD={ok:"verde",mid:"amarillo",bad:"rojo"};
 
 // ---------- state ----------
-let days={};            // date -> {date, bleed?, entries:[...]}
+let days={};            // date -> {date, bleed?, sleep?, entries:[...]}
 let viewDate=todayStr();
 let sev=null;
-let lastSaved=null;
-let unsub=[];
+let editing=null;       // {date,id}
 
 // ---------- helpers ----------
 function pad(n){return String(n).padStart(2,"0")}
@@ -296,22 +422,50 @@ function addDays(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);r
 function fmtDate(s){const d=new Date(s+"T12:00:00");return d.toLocaleDateString("es-UY",{weekday:"long",day:"numeric",month:"long"})}
 function norm(s){return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
 function ls(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||"null");localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
+function dayOf(iso){return dstr(new Date(iso))}
 
 function toast(msg,undo){const t=$("#toast");t.innerHTML=esc(msg)+(undo?' <button type="button" id="undoBtn">Deshacer</button>':"");t.hidden=false;
   if(undo)$("#undoBtn").onclick=()=>{undo();t.hidden=true};clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,5000)}
 
-// ---------- bleeding (per day) ----------
+// ---------- bleeding & sleep (per day) ----------
 function bleedOf(dateStr){const d=days[dateStr];return d&&d.bleed?d.bleed:null}
+function sleepOf(dateStr){const d=days[dateStr];return d&&d.sleep?d.sleep:null}
+function sleepWord(q){const s=SLEEPS.find(x=>x[0]===q);return s?s[1]:""}
 function bleedFromText(n){if(/abundant|mucho|fuerte/.test(n))return "abundante";if(/moderad|normal|medio/.test(n))return "moderado";if(/manch|spotting|gotas|poquit|apenas/.test(n))return "manchado";if(/sin sangr|no sangr|no manch|par[óo]|se cort[óo]/.test(n))return "ninguno";return "leve"}
-function renderCycle(){
+function sleepFromText(n){
+  if(/muy mal|pesim|horrible|no dormi|no pude dormir|casi nada|nada/.test(n))return 1;
+  if(/\bmal\b|poco|cortad|desvel|trasnoch|insomnio|me desperte (varias|muchas)|interrumpid/.test(n))return 2;
+  if(/regular|mas o menos|masomenos|ni bien ni mal|normal/.test(n))return 3;
+  if(/muy bien|excelente|barbaro|de corrido|de un tiron|genial|perfecto/.test(n))return 5;
+  if(/\bbien\b|ok\b|lindo/.test(n))return 4;
+  return 3;
+}
+function renderDayCards(){
   const b=bleedOf(viewDate);
   $("#cycleBig").textContent=b?(b==="ninguno"?"Sin sangrado":"Sangrado "+b):"Sin marcar";
-  $("#cycleSub").textContent=b?"Marcado para este día. Cambiá tocando otra opción.":"Marcá cómo fue el día, o decí “sangrado leve” o “manché”.";
+  $("#cycleSub").textContent=b?"Marcado para este día.":"Marcá el día o decí “manché”.";
   $("#phaseChips").innerHTML=BLEEDS.map(x=>`<button type="button" class="chip${x===b?" active":""}" data-phase="${x}">${x==="ninguno"?"sin sangrado":x}</button>`).join("");
+  const q=sleepOf(viewDate);
+  $("#sleepBig").textContent=q?("Dormí "+sleepWord(q)):"Sin marcar";
+  $("#sleepSub").textContent=q?"Calidad "+q+" de 5.":"Marcá cómo dormiste o decí “dormí mal”.";
+  $("#sleepChips").innerHTML=SLEEPS.map(([v,w])=>`<button type="button" class="chip${v===q?" active":""}" data-sleep="${v}">${w}</button>`).join("");
 }
-async function setBleed(date,level){
-  if(!days[date])days[date]={date,entries:[]};
-  days[date].bleed=level; await writeDay(date); render();
+async function setBleed(date,level){if(!days[date])days[date]={date,entries:[]};days[date].bleed=level;await writeDay(date);render()}
+async function setSleep(date,q){if(!days[date])days[date]={date,entries:[]};days[date].sleep=q;await writeDay(date);render()}
+
+// ---------- semáforos ----------
+function renderLights(){
+  const L=dayLoad(viewDate);
+  const mk=(k,label,score,items)=>{const lv=level(score);return `<button type="button" class="light ${lv}" data-light="${k}" aria-label="Semáforo ${label}: ${LEVEL_WORD[lv]}"><span class="dot">${k}</span>${label} <span class="n">${score}</span></button>`};
+  $("#lights").innerHTML=mk("H","Histamina",L.h,L.hItems)+mk("F","FODMAP",L.f,L.fItems)+'<span class="small muted">Tocá para ver qué suma</span>';
+  const info=$("#lightInfo"); const open=info.dataset.open;
+  if(open){
+    const items=open==="H"?L.hItems:L.fItems; const score=open==="H"?L.h:L.f; const lv=level(score);
+    info.innerHTML=`<b>${open==="H"?"Histamina":"FODMAP"} hoy: ${LEVEL_WORD[lv]} (${score} puntos)</b>
+      ${items.length?"<ul>"+items.map(x=>`<li>${x.t} · ${esc(x.it)} <span class="tag ${open.toLowerCase()}${x.lvl}">${x.lvl===2?"alto":"medio"}</span></li>`).join("")+"</ul>":"<div class='muted'>Nada que sume por ahora.</div>"}
+      <div class="small muted">Alto suma 2, medio suma 1. Verde hasta 2 · amarillo 3 a 5 · rojo 6 o más. ${open==="H"?"Basado en la lista SIGHI: fermentados, curados, enlatados, alcohol, tomate, espinaca, cítricos, frutilla, chocolate, frutos secos y sobras recalentadas.":"Basado en Monash: cebolla, ajo, trigo, lácteos con lactosa, legumbres, manzana, pera, coliflor, hongos, miel y edulcorantes."}</div>`;
+    info.classList.add("open");
+  } else info.classList.remove("open");
 }
 
 // ---------- parsing ----------
@@ -326,19 +480,24 @@ function parseTime(text,baseDate){
   return d.toISOString();
 }
 function cleanItem(s){return s.replace(/^(un|una|unos|unas|el|la|los|las|de|del|algo de|un poco de|mucho|mucha|dos|tres|cuatro|media|medio)\s+/i,"").replace(/[.!?]+$/,"").trim()}
+function splitItems(rest){return rest.split(/,|\by\b|\bcon\b|\bmás\b|\+|\bjunto a\b/i).map(cleanItem).filter(x=>x.length>1)}
 function parse(text,baseDate){
   const raw=text.trim(); const n=norm(raw); const at=parseTime(raw,baseDate);
   const syms=[]; for(const [re,name] of SYMPTOMS){if(re.test(n)&&!syms.includes(name))syms.push(name)}
   let s=sev; if(s==null){ if(/leve|poquit|un poco/.test(n))s=1; else if(/moderad|bastante/.test(n))s=3; else if(/fuerte|mucho|intens|horrible|terrible|muy/.test(n))s=4; }
   const m=n.match(/\b([1-5])\s*(\/\s*5|de 5)?\b(?!\s*(h|hora|min|tostada|huevo))/); if(s==null&&m&&!/a las|hace/.test(n))s=+m[1];
+  if(SLEEP_RE.test(n)&&!FOOD_VERBS.test(n)&&!/dormir me|antes de dormir/.test(n)){
+    const q=sleepFromText(n);
+    return {kind:"descanso",items:["dormí "+sleepWord(q)],text:raw,t:at,q};
+  }
   if(BLEED_RE.test(n)&&!FOOD_VERBS.test(n)){
-    const level=bleedFromText(n);
-    return {kind:"ciclo",items:[level==="ninguno"?"sin sangrado":"sangrado "+level],text:raw,t:at,bleed:level};
+    const lvl=bleedFromText(n);
+    return {kind:"ciclo",items:[lvl==="ninguno"?"sin sangrado":"sangrado "+lvl],text:raw,t:at,bleed:lvl};
   }
   if(FOOD_VERBS.test(n)||(/\b(comida|desayuno|almuerzo|cena|merienda|snack)\b/.test(n)&&!syms.length)){
     let rest=raw.replace(/^[^ ]+( me)?\s+/i,"").replace(/\ba las \d{1,2}([:.h]\d{2})?( de la (tarde|noche|mañana))?/i,"").replace(/\bhace \d+ ?(h|horas?|min|minutos)/i,"").replace(/\bayer\b/i,"");
     rest=rest.replace(/\bde la (tarde|noche|mañana)\b/i,"");
-    const items=rest.split(/,|\by\b|\bcon\b|\bmás\b|\+|\bjunto a\b/i).map(cleanItem).filter(x=>x.length>1);
+    const items=splitItems(rest);
     return {kind:"comida",items:items.length?items:[cleanItem(rest)||raw],text:raw,t:at};
   }
   if(syms.length||WAKE_RE.test(n)||/me siento|me duele|tengo|siento|molest|malestar|dolor/.test(n)){
@@ -348,54 +507,85 @@ function parse(text,baseDate){
 }
 
 // ---------- persistence ----------
-function dayOf(iso){return dstr(new Date(iso))}
 async function writeDay(date){
   const doc=days[date]||{date,entries:[]}; days[date]=doc;
   try{localStorage.setItem("days",JSON.stringify(days))}catch(e){toast("No se pudo guardar: sin espacio en el navegador.")}
 }
+const KIND_LABEL={comida:"Comida",sintoma:"Síntoma",descanso:"Descanso",ciclo:"Sangrado",nota:"Nota"};
 async function addEntry(e){
   e.id=uid(); const date=dayOf(e.t);
   if(!days[date])days[date]={date,entries:[]};
   days[date].entries.push(e); days[date].entries.sort((a,b)=>a.t<b.t?-1:1);
   if(e.kind==="ciclo"&&e.bleed)days[date].bleed=e.bleed;
+  if(e.kind==="descanso"&&e.q)days[date].sleep=e.q;
   await writeDay(date); render();
-  lastSaved={date,id:e.id};
-  toast((e.kind==="comida"?"Comida":e.kind==="sintoma"?"Síntoma":e.kind==="ciclo"?"Sangrado":"Nota")+" registrado: "+e.items.join(", ")+" · "+hm(e.t),()=>removeEntry(date,e.id));
+  let extra="";
+  if(e.kind==="comida"){const L=dayLoad(date);extra=" · H "+LEVEL_WORD[level(L.h)]+", F "+LEVEL_WORD[level(L.f)]}
+  toast(KIND_LABEL[e.kind]+" registrado: "+e.items.join(", ")+" · "+hm(e.t)+extra,()=>removeEntry(date,e.id));
 }
 async function removeEntry(date,id){const d=days[date];if(!d)return;d.entries=d.entries.filter(x=>x.id!==id);await writeDay(date);render()}
 async function updateEntry(date,id,patch){const d=days[date];if(!d)return;const e=d.entries.find(x=>x.id===id);if(!e)return;Object.assign(e,patch);
-  const nd=dayOf(e.t); if(nd!==date){d.entries=d.entries.filter(x=>x.id!==id);await writeDay(date);if(!days[nd])days[nd]={date:nd,entries:[]};days[nd].entries.push(e);days[nd].entries.sort((a,b)=>a.t<b.t?-1:1);await writeDay(nd)}else{d.entries.sort((a,b)=>a.t<b.t?-1:1);await writeDay(date)}render()}
+  const nd=dayOf(e.t);
+  if(nd!==date){d.entries=d.entries.filter(x=>x.id!==id);await writeDay(date);if(!days[nd])days[nd]={date:nd,entries:[]};days[nd].entries.push(e);days[nd].entries.sort((a,b)=>a.t<b.t?-1:1);await writeDay(nd)}
+  else{d.entries.sort((a,b)=>a.t<b.t?-1:1);await writeDay(date)}
+  if(e.kind==="descanso"&&e.q){days[nd].sleep=e.q;await writeDay(nd)}
+  if(e.kind==="ciclo"&&e.bleed){days[nd].bleed=e.bleed;await writeDay(nd)}
+  render()}
 
 // ---------- render ----------
-const KIND_LABEL={comida:"Comida",sintoma:"Síntoma",ciclo:"Sangrado",nota:"Nota"};
+function itemTags(e){
+  return e.items.map(i=>{let tags="";if(e.kind==="comida"){const l=foodLevels(i);if(l.h)tags+=`<span class="tag h${l.h}">H</span>`;if(l.f)tags+=`<span class="tag f${l.f}">F</span>`}return '<span class="it">'+esc(i)+tags+'</span>'}).join("");
+}
 function render(){
   $("#hdrDate").textContent=fmtDate(todayStr());
   $("#dayTitle").textContent=viewDate===todayStr()?"Hoy":viewDate===addDays(todayStr(),-1)?"Ayer":fmtDate(viewDate);
   $("#nextDay").disabled=viewDate>=todayStr();
-  renderCycle();
+  renderDayCards(); renderLights();
   const d=days[viewDate]; const tl=$("#timeline");
-  if(!d||!d.entries.length){tl.innerHTML='<div class="empty">Nada registrado todavía. Decí qué comiste o cómo te sentís y tocá <b>Registrar</b>.</div>';return}
-  tl.innerHTML=d.entries.map(e=>`<div class="entry ${e.kind}" data-id="${e.id}">
+  if(!d||!d.entries.length){tl.innerHTML='<div class="empty">Nada registrado todavía. Escribí o dictá qué comiste, cómo te sentís o cómo dormiste, y tocá <b>Registrar</b>.</div>';return}
+  tl.innerHTML=d.entries.map(e=>`<button type="button" class="entry ${e.kind}" data-id="${e.id}" aria-label="Abrir registro">
     <div class="t">${hm(e.t)}</div><div class="bar"></div>
-    <div class="body"><div class="kind">${KIND_LABEL[e.kind]}${e.sev?" · intensidad "+e.sev:""}${e.wake?" · al despertar":""}</div>
-      <div class="items">${e.items.map(i=>"<span>"+esc(i)+"</span>").join("")}</div>
+    <div class="body"><div class="kind">${KIND_LABEL[e.kind]}${e.sev?" · intensidad "+e.sev:""}${e.q?" · "+e.q+"/5":""}${e.wake?" · al despertar":""}</div>
+      <div class="items">${itemTags(e)}</div>
       ${e.text&&e.text!==e.items.join(", ")?'<div class="raw">“'+esc(e.text)+'”</div>':""}
-      <div class="acts"><button type="button" data-act="edit">editar</button><button type="button" data-act="del">borrar</button></div>
-      <div class="editbox" hidden></div>
-    </div></div>`).join("");
-  tl.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>{
-    const el=b.closest(".entry"), id=el.dataset.id, e=d.entries.find(x=>x.id===id);
-    if(b.dataset.act==="del"){removeEntry(viewDate,id);toast("Borrado",()=>{d.entries.push(e);d.entries.sort((a,b)=>a.t<b.t?-1:1);writeDay(viewDate);render()});return}
-    const box=el.querySelector(".editbox"); if(!box.hidden){box.hidden=true;return}
-    box.hidden=false; box.innerHTML=`<div class="row"><select aria-label="Tipo">${Object.keys(KIND_LABEL).map(k=>`<option value="${k}"${k===e.kind?" selected":""}>${KIND_LABEL[k]}</option>`).join("")}</select><input type="time" value="${hm(e.t)}" aria-label="Hora"><select aria-label="Intensidad"><option value="">sin intensidad</option>${[1,2,3,4,5].map(n=>`<option value="${n}"${e.sev===n?" selected":""}>intensidad ${n}</option>`).join("")}</select></div>
-      <div class="row"><input type="text" value="${esc(e.items.join(", "))}" aria-label="Elementos, separados por coma"></div>
-      <div class="row"><button type="button" class="btn primary">Guardar</button><button type="button" class="btn">Cancelar</button></div>`;
-    const [kindSel,timeIn,sevSel]=box.querySelectorAll("select,input[type=time]"); const itemsIn=box.querySelector("input[type=text]");
-    const sevS=box.querySelectorAll("select")[1];
-    box.querySelector(".btn.primary").onclick=()=>{const t=new Date(e.t);const [h,m]=timeIn.value.split(":");t.setHours(+h,+m);updateEntry(viewDate,id,{kind:kindSel.value,t:t.toISOString(),sev:sevS.value?+sevS.value:null,items:itemsIn.value.split(",").map(s=>s.trim()).filter(Boolean)})};
-    box.querySelector(".btn:not(.primary)").onclick=()=>box.hidden=true;
-  });
+    </div></button>`).join("");
+  tl.querySelectorAll(".entry").forEach(b=>b.onclick=()=>openSheet(viewDate,b.dataset.id));
 }
+
+// ---------- detail sheet ----------
+function openSheet(date,id){
+  const e=(days[date]||{entries:[]}).entries.find(x=>x.id===id); if(!e)return;
+  editing={date,id};
+  $("#sheetTitle").textContent=KIND_LABEL[e.kind]+" · "+hm(e.t);
+  $("#eKind").value=e.kind; $("#eTime").value=hm(e.t); $("#eDate").value=dayOf(e.t);
+  $("#eItems").value=e.items.join(", "); $("#eText").value=e.text||"";
+  $("#eSev").innerHTML=[1,2,3,4,5].map(n=>`<button type="button" class="chip${e.sev===n?" active":""}" data-v="${n}">${n}</button>`).join("");
+  $("#eQ").innerHTML=SLEEPS.map(([v,w])=>`<button type="button" class="chip${e.q===v?" active":""}" data-v="${v}">${w}</button>`).join("");
+  $("#eSev").dataset.v=e.sev||""; $("#eQ").dataset.v=e.q||"";
+  sheetKindUI(); sheetSem();
+  $("#toast").hidden=true;
+  $("#overlay").classList.add("open");
+}
+function sheetKindUI(){const k=$("#eKind").value;$("#eSevWrap").hidden=k!=="sintoma";$("#eQWrap").hidden=k!=="descanso";sheetSem()}
+function sheetSem(){const k=$("#eKind").value;const box=$("#eSem");if(k!=="comida"){box.innerHTML="";return}
+  const items=$("#eItems").value.split(",").map(s=>s.trim()).filter(Boolean);
+  box.innerHTML=items.map(i=>{const l=foodLevels(i);return `<span class="chip">${esc(i)}${l.h?`<span class="tag h${l.h}">H</span>`:""}${l.f?`<span class="tag f${l.f}">F</span>`:""}</span>`}).join("")||'<span class="muted small">Sin elementos.</span>'}
+function closeSheet(){$("#overlay").classList.remove("open");editing=null}
+$("#sheetClose").onclick=closeSheet;
+$("#overlay").addEventListener("click",ev=>{if(ev.target===$("#overlay"))closeSheet()});
+$("#eKind").onchange=sheetKindUI;
+$("#eItems").addEventListener("input",sheetSem);
+["#eSev","#eQ"].forEach(s=>$(s).onclick=ev=>{const b=ev.target.closest("[data-v]");if(!b)return;const box=$(s);const v=box.dataset.v===b.dataset.v?"":b.dataset.v;box.dataset.v=v;box.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active",c.dataset.v===v))});
+$("#eSave").onclick=async()=>{
+  if(!editing)return;const {date,id}=editing;
+  const kind=$("#eKind").value;const [h,m]=$("#eTime").value.split(":");const dt=new Date(($("#eDate").value||date)+"T12:00:00");dt.setHours(+h||0,+m||0,0,0);
+  const items=$("#eItems").value.split(",").map(s=>s.trim()).filter(Boolean);
+  const patch={kind,t:dt.toISOString(),items:items.length?items:[$("#eText").value.trim()||"registro"],text:$("#eText").value.trim(),sev:kind==="sintoma"&&$("#eSev").dataset.v?+$("#eSev").dataset.v:null,q:kind==="descanso"&&$("#eQ").dataset.v?+$("#eQ").dataset.v:null};
+  if(kind==="ciclo")patch.bleed=bleedFromText(norm(items.join(" ")+" "+patch.text));
+  await updateEntry(date,id,patch); closeSheet(); toast("Guardado");
+};
+$("#eDelete").onclick=async()=>{if(!editing)return;const {date,id}=editing;const e=days[date].entries.find(x=>x.id===id);await removeEntry(date,id);closeSheet();
+  toast("Borrado",()=>{if(!days[date])days[date]={date,entries:[]};days[date].entries.push(e);days[date].entries.sort((a,b)=>a.t<b.t?-1:1);writeDay(date);render()})};
 
 // ---------- analysis ----------
 function allEntries(){return Object.values(days).flatMap(d=>d.entries).sort((a,b)=>a.t<b.t?-1:1)}
@@ -413,40 +603,58 @@ function analyze(){
   const fasting=syms.filter(s=>{const t=new Date(s.t).getTime();return !foods.some(f=>{const t0=new Date(f.t).getTime();return t0<t&&t-t0<=win*36e5})});
   const fastingCount={};for(const s of fasting)for(const i of s.items)fastingCount[i]=(fastingCount[i]||0)+1;
   const byItem={};
-  for(const f of foods){const after=symsAfter(f);const seen=new Set();for(let it of f.items){it=norm(it).trim();if(!it||seen.has(it))continue;seen.add(it);const r=byItem[it]||(byItem[it]={n:0,hit:0,syms:{},sevSum:0});r.n++;if(after.length){r.hit++;for(const s of after)for(const si of s.items){r.syms[si]=(r.syms[si]||0)+1;r.sevSum+=s.sev||0}}}}
+  for(const f of foods){const after=symsAfter(f);const seen=new Set();for(let it of f.items){it=norm(it).trim();if(!it||seen.has(it))continue;seen.add(it);const r=byItem[it]||(byItem[it]={n:0,hit:0,syms:{}});r.n++;if(after.length){r.hit++;for(const s of after)for(const si of s.items){r.syms[si]=(r.syms[si]||0)+1}}}}
   const rows=Object.entries(byItem).map(([k,r])=>({k,...r,rate:r.hit/r.n,lift:base?(r.hit/r.n)/base:0})).sort((a,b)=>(b.rate-a.rate)||(b.n-a.n));
   const symCount={};for(const s of syms)for(const i of s.items)symCount[i]=(symCount[i]||0)+1;
-  const phaseSym={};for(const s of syms){const b=bleedOf(dayOf(s.t));const p=b?(b==="ninguno"?"sin sangrado":"sangrado "+b):"sin marcar";phaseSym[p]=phaseSym[p]||{};for(const i of s.items)phaseSym[p][i]=(phaseSym[p][i]||0)+1}
-  const BLEED_ROWS=["sin sangrado","sangrado manchado","sangrado leve","sangrado moderado","sangrado abundante","sin marcar"];
+  const topSyms=Object.keys(symCount).sort((a,b)=>symCount[b]-symCount[a]).slice(0,6);
+  const groupTable=(label,groups,keyOf)=>{const g={};for(const s of syms){const k=keyOf(s);g[k]=g[k]||{};for(const i of s.items)g[k][i]=(g[k][i]||0)+1}
+    return `<div class="tablewrap"><table><thead><tr><th>${label}</th>${topSyms.map(s=>"<th>"+esc(s)+"</th>").join("")}<th>Total</th></tr></thead><tbody>
+    ${groups.filter(p=>g[p]).map(p=>`<tr><td>${esc(p)}</td>${topSyms.map(s=>'<td class="num">'+(g[p][s]||"·")+"</td>").join("")}<td class="num">${Object.values(g[p]).reduce((a,b)=>a+b,0)}</td></tr>`).join("")}</tbody></table></div>`};
+  // semáforo por día
+  const dayKeys=[...new Set(es.map(e=>dayOf(e.t)))].sort();
+  const dayRows=dayKeys.map(k=>{const L=dayLoad(k);const ns=(days[k]||{entries:[]}).entries.filter(e=>e.kind==="sintoma").length;return {k,L,ns}});
+  const byLevel=(key)=>{const g={ok:{d:0,s:0},mid:{d:0,s:0},bad:{d:0,s:0}};for(const r of dayRows){const lv=level(r.L[key]);g[lv].d++;g[lv].s+=r.ns}return g};
+  const gh=byLevel("h"), gf=byLevel("f");
+  const avg=g=>["ok","mid","bad"].map(l=>`<div class="stat"><div class="n">${g[l].d?(g[l].s/g[l].d).toFixed(1):"·"}</div><div class="l">síntomas/día en ${LEVEL_WORD[l]} (${g[l].d} días)</div></div>`).join("");
   const liftTag=x=>x.n<2?'<span class="lift mid">pocos datos</span>':x.lift>=1.5?'<span class="lift hi">×'+x.lift.toFixed(1)+'</span>':x.lift<=0.6?'<span class="lift lo">×'+x.lift.toFixed(1)+'</span>':'<span class="lift mid">×'+x.lift.toFixed(1)+'</span>';
   out.innerHTML=`<div class="card"><h2>Resumen</h2><div class="small muted">Síntoma dentro de las ${win} h después de comer.</div>
     <div class="stats"><div class="stat"><div class="n">${foods.length}</div><div class="l">comidas</div></div><div class="stat"><div class="n">${syms.length}</div><div class="l">síntomas</div></div><div class="stat"><div class="n">${Math.round(base*100)}%</div><div class="l">comidas seguidas de síntoma</div></div></div>
-    <div class="small" style="margin-top:.6rem"><b>${fasting.length}</b> de ${syms.length} síntomas aparecieron sin ninguna comida en las ${win} h previas${fasting.length?": "+Object.entries(fastingCount).sort((a,b)=>b[1]-a[1]).map(([s,c])=>esc(s)+" ("+c+")").join(", "):""}. <span class="muted">Esos apuntan más al ciclo, al IMO o al sueño que a un alimento puntual.</span></div></div>
+    <div class="small" style="margin-top:.6rem"><b>${fasting.length}</b> de ${syms.length} síntomas aparecieron sin ninguna comida en las ${win} h previas${fasting.length?": "+Object.entries(fastingCount).sort((a,b)=>b[1]-a[1]).map(([s,c])=>esc(s)+" ("+c+")").join(", "):""}. <span class="muted">Esos apuntan más al sangrado, al descanso o al IMO que a un alimento puntual.</span></div></div>
+  <div class="card"><h2>Semáforos por día</h2><div class="small muted">Histamina (H) y FODMAP (F) de cada día del período, de más antiguo a más reciente.</div>
+    <div class="small" style="margin-top:.5rem">H</div><div class="strip">${dayRows.map(r=>`<i class="${level(r.L.h)}" title="${r.k}: H ${r.L.h}"></i>`).join("")}</div>
+    <div class="small" style="margin-top:.5rem">F</div><div class="strip">${dayRows.map(r=>`<i class="${level(r.L.f)}" title="${r.k}: F ${r.L.f}"></i>`).join("")}</div>
+    <h3 style="margin-top:.8rem">Histamina</h3><div class="stats">${avg(gh)}</div>
+    <h3 style="margin-top:.8rem">FODMAP</h3><div class="stats">${avg(gf)}</div>
+    <div class="small muted" style="margin-top:.5rem">Si los días rojos tienen más síntomas por día que los verdes, ese grupo de alimentos merece atención.</div></div>
   <div class="card"><h2>Alimentos y lo que vino después</h2><div class="small muted">Orden: % de veces que un síntoma apareció dentro de la ventana. “×” compara contra el promedio de todas las comidas.</div>
     <div class="tablewrap"><table><thead><tr><th>Alimento</th><th>Veces</th><th>Con síntoma</th><th></th><th>Síntomas</th></tr></thead><tbody>
-    ${rows.slice(0,40).map(r=>`<tr><td>${esc(r.k)}</td><td class="num">${r.n}</td><td class="num">${r.hit} (${Math.round(r.rate*100)}%)</td><td><div class="bar-h"><i style="width:${Math.round(r.rate*100)}%"></i></div></td><td>${liftTag(r)} <span class="sublist">${Object.entries(r.syms).sort((a,b)=>b[1]-a[1]).map(([s,c])=>esc(s)+" ("+c+")").join(", ")}</span></td></tr>`).join("")}
+    ${rows.slice(0,40).map(r=>{const l=foodLevels(r.k);return `<tr><td>${esc(r.k)}${l.h?`<span class="tag h${l.h}">H</span>`:""}${l.f?`<span class="tag f${l.f}">F</span>`:""}</td><td class="num">${r.n}</td><td class="num">${r.hit} (${Math.round(r.rate*100)}%)</td><td><div class="bar-h"><i style="width:${Math.round(r.rate*100)}%"></i></div></td><td>${liftTag(r)} <span class="sublist">${Object.entries(r.syms).sort((a,b)=>b[1]-a[1]).map(([s,c])=>esc(s)+" ("+c+")").join(", ")}</span></td></tr>`}).join("")}
     </tbody></table></div>${rows.length>40?'<div class="small muted">Se muestran los 40 primeros.</div>':""}</div>
   <div class="card"><h2>Síntomas según el sangrado del día</h2>
-    <div class="tablewrap"><table><thead><tr><th>Día</th>${Object.keys(symCount).sort((a,b)=>symCount[b]-symCount[a]).slice(0,6).map(s=>"<th>"+esc(s)+"</th>").join("")}<th>Total</th></tr></thead><tbody>
-    ${BLEED_ROWS.filter(p=>phaseSym[p]).map(p=>`<tr><td>${esc(p)}</td>${Object.keys(symCount).sort((a,b)=>symCount[b]-symCount[a]).slice(0,6).map(s=>'<td class="num">'+(phaseSym[p][s]||"·")+"</td>").join("")}<td class="num">${Object.values(phaseSym[p]).reduce((a,b)=>a+b,0)}</td></tr>`).join("")}
-    </tbody></table></div>
-    <div class="small muted" style="margin-top:.5rem">Con endometriosis y el DIU reciente, los días con sangrado pueden sumar síntomas por sí solos: compará un mismo alimento en días con y sin sangrado antes de culparlo.</div></div>`;
+    ${groupTable("Día",["sin sangrado","sangrado manchado","sangrado leve","sangrado moderado","sangrado abundante","sin marcar"],s=>{const b=bleedOf(dayOf(s.t));return b?(b==="ninguno"?"sin sangrado":"sangrado "+b):"sin marcar"})}
+    <div class="small muted" style="margin-top:.5rem">Con endometriosis y el DIU reciente, los días con sangrado pueden sumar síntomas por sí solos: compará un mismo alimento en días con y sin sangrado antes de culparlo.</div></div>
+  <div class="card"><h2>Síntomas según cómo dormiste</h2>
+    ${groupTable("Noche",["dormí muy mal","dormí mal","dormí regular","dormí bien","dormí muy bien","sin marcar"],s=>{const q=sleepOf(dayOf(s.t));return q?"dormí "+sleepWord(q):"sin marcar"})}
+    <div class="small muted" style="margin-top:.5rem">Dormir mal baja el umbral de dolor y altera el intestino; si los días de mal descanso concentran síntomas, no es (solo) la comida.</div></div>`;
 }
 
 function periodData(){
   const period=+$("#period").value; const since=period?Date.now()-period*864e5:0;
-  return allEntries().filter(e=>new Date(e.t).getTime()>=since).map(e=>({t:e.t.slice(0,16).replace("T"," "),tipo:e.kind,items:e.items,int:e.sev||undefined,sangrado_del_dia:bleedOf(dayOf(e.t))||undefined,al_despertar:e.wake||undefined}));
+  return allEntries().filter(e=>new Date(e.t).getTime()>=since).map(e=>{const d=dayOf(e.t);const L=e.kind==="comida"?{h:0,f:0}:null;
+    return {t:e.t.slice(0,16).replace("T"," "),tipo:e.kind,items:e.items,int:e.sev||undefined,calidad_descanso:e.q||undefined,sangrado_del_dia:bleedOf(d)||undefined,descanso_noche:sleepOf(d)||undefined,al_despertar:e.wake||undefined,texto:e.text&&e.text!==e.items.join(", ")?e.text:undefined,
+      H:e.kind==="comida"?e.items.reduce((a,i)=>a+foodLevels(i).h,0)||undefined:undefined,F:e.kind==="comida"?e.items.reduce((a,i)=>a+foodLevels(i).f,0)||undefined:undefined}});
 }
 function buildPrompt(){
   const data=periodData(); if(!data.length)return null;
   return `Sos un asistente que ayuda a una persona con endometriosis, histaminosis (intolerancia a la histamina / déficit de DAO), intolerancia a la lactosa e IMO (sobrecrecimiento de metanógenos intestinales) a revisar su diario de comidas y síntomas. Tiene un DIU hormonal puesto hace poco y sangrados irregulares, así que no se conoce la fase del ciclo: solo si ese día hubo sangrado y cuánto. Respondé en español rioplatense, con tono claro y cercano, sin alarmar.
-Datos (hora local, tipo, elementos, intensidad 1-5, sangrado del día, si fue al despertar):
+Datos (hora local, tipo, elementos, intensidad 1-5, calidad del descanso 1-5, sangrado del día, descanso de esa noche 1-5, si fue al despertar, texto original, y para comidas una carga estimada H = histamina y F = FODMAP, donde alto suma 2 y medio 1):
 ${JSON.stringify(data)}
 Ventana de interés: síntomas dentro de las ${$("#win").value} horas después de una comida.
 Devolvé un informe en Markdown con estas secciones:
 ### Lo que más se repite
 ### Alimentos sospechosos (y por qué: histamina, lactosa, FODMAP/IMO)
 ### Días con sangrado vs. sin sangrado
+### Efecto del descanso
 ### Qué probar la semana que viene
 ### Para llevarle a la médica
 Reglas: basate solo en los datos; indicá cuántas veces ocurrió cada cosa; distinguí correlación de causa; si hay pocos datos decilo. Sin diagnósticos.`;
@@ -457,24 +665,23 @@ async function report(){
   box.value=p; box.hidden=false;
   try{await navigator.clipboard.writeText(p);toast("Copiado. Pegalo en el chat de Claude.")}catch(e){box.focus();box.select();toast("Seleccioná el texto y copialo.")}
 }
-async function shareReport(){const p=buildPrompt();if(!p){toast("No hay registros en el período.");return}try{await navigator.share({title:"Bitácora Digestiva",text:p})}catch(e){}}
+async function shareReport(){const p=buildPrompt();if(!p){toast("No hay registros en el período.");return}try{await navigator.share({title:"Miga, mi bitácora",text:p})}catch(e){}}
 function download(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
 function exportCsv(){
-  const rows=[["fecha_hora","tipo","elementos","intensidad","sangrado_del_dia","al_despertar","texto"]].concat(allEntries().map(e=>[e.t,e.kind,e.items.join("; "),e.sev||"",bleedOf(dayOf(e.t))||"",e.wake?"sí":"",e.text||""]));
+  const rows=[["fecha_hora","tipo","elementos","intensidad","calidad_descanso","sangrado_del_dia","descanso_noche","al_despertar","H","F","texto"]].concat(allEntries().map(e=>{const d=dayOf(e.t);return [e.t,e.kind,e.items.join("; "),e.sev||"",e.q||"",bleedOf(d)||"",sleepOf(d)||"",e.wake?"sí":"",e.kind==="comida"?e.items.reduce((a,i)=>a+foodLevels(i).h,0):"",e.kind==="comida"?e.items.reduce((a,i)=>a+foodLevels(i).f,0):"",e.text||""]}));
   const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
-  download("bitacora-digestiva.csv",new Blob(["﻿"+csv],{type:"text/csv"}));
+  download("miga-bitacora.csv",new Blob(["﻿"+csv],{type:"text/csv"}));
 }
-function backup(){download("bitacora-respaldo-"+todayStr()+".json",new Blob([JSON.stringify({version:1,days},null,1)],{type:"application/json"}))}
+function backup(){download("miga-respaldo-"+todayStr()+".json",new Blob([JSON.stringify({version:2,days},null,1)],{type:"application/json"}))}
 function restore(file){const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);const src=j.days||j;let n=0;
-  for(const k in src){const d=src[k];if(!d||!Array.isArray(d.entries))continue;if(!days[k])days[k]={date:k,entries:[]};if(d.bleed)days[k].bleed=d.bleed;const ids=new Set(days[k].entries.map(e=>e.id));for(const e of d.entries)if(!ids.has(e.id)){days[k].entries.push(e);n++}days[k].entries.sort((a,b)=>a.t<b.t?-1:1)}
+  for(const k in src){const d=src[k];if(!d||!Array.isArray(d.entries))continue;if(!days[k])days[k]={date:k,entries:[]};if(d.bleed)days[k].bleed=d.bleed;if(d.sleep)days[k].sleep=d.sleep;const ids=new Set(days[k].entries.map(e=>e.id));for(const e of d.entries)if(!ids.has(e.id)){days[k].entries.push(e);n++}days[k].entries.sort((a,b)=>a.t<b.t?-1:1)}
   localStorage.setItem("days",JSON.stringify(days));render();toast("Restaurado: "+n+" registros nuevos.")}catch(e){toast("El archivo no es un respaldo válido.")}};r.readAsText(file)}
 
 // ---------- voice ----------
 let startListening=null;
 function setupVoice(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition; const btn=$("#micBtn");
-  if(!SR){btn.hidden=true;$("#micHint").innerHTML="Este navegador no tiene reconocimiento de voz: tocá el campo y usá el <b>micrófono del teclado</b>.";return}
-  $("#micHint").innerHTML="Tocá 🎤 y decí por ejemplo: <em>comí tostadas con palta</em>, <em>hinchazón fuerte</em>, <em>manché un poco</em>. Se registra solo al terminar de hablar.";
+  if(!SR){btn.hidden=true;$("#micHint").innerHTML="Este navegador no tiene reconocimiento de voz: escribí en el campo o usá el <b>micrófono del teclado</b>.";return}
   let rec=null, on=false;
   startListening=()=>{
     if(on){try{rec.stop()}catch(e){}return}
@@ -482,9 +689,9 @@ function setupVoice(){
       rec.onstart=()=>{on=true;btn.classList.add("listening");btn.textContent="■";$("#say").placeholder="Escuchando…"};
       rec.onresult=ev=>{let s="";for(const r of ev.results)s+=r[0].transcript;$("#say").value=s;if(ev.results[ev.results.length-1].isFinal){setTimeout(()=>save(),250)}};
       rec.onerror=ev=>{on=false;btn.classList.remove("listening");btn.textContent="🎤";
-        if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){toast("Permiso de micrófono denegado. Habilitalo en los ajustes del navegador o dictá con el teclado.");$("#say").focus()}
-        else if(ev.error==="no-speech"){toast("No escuché nada. Probá de nuevo.")}};
-      rec.onend=()=>{on=false;btn.classList.remove("listening");btn.textContent="🎤";$("#say").placeholder="comí ensalada con pollo y arroz"};
+        if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){toast("Permiso de micrófono denegado. Habilitalo en los ajustes del navegador o escribí.");$("#say").focus()}
+        else if(ev.error==="no-speech"){toast("No escuché nada. Probá de nuevo o escribí.")}};
+      rec.onend=()=>{on=false;btn.classList.remove("listening");btn.textContent="🎤";$("#say").placeholder="Escribí o dictá: comí ensalada con pollo y arroz"};
       rec.start();
     }catch(e){toast("No se pudo iniciar el micrófono.")}
   };
@@ -502,12 +709,15 @@ $("#say").addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!ev.shiftKey){ev.
 $("#symChips").innerHTML=QUICK.map(s=>`<button type="button" class="chip sym" data-sym="${s}">${s}</button>`).join("");
 $("#symChips").onclick=ev=>{const b=ev.target.closest("[data-sym]");if(!b)return;const ta=$("#say");ta.value=(ta.value.trim()?ta.value.trim()+", ":"")+b.dataset.sym;ta.focus()};
 document.querySelectorAll(".sev").forEach(b=>b.onclick=()=>{sev=sev===+b.dataset.sev?null:+b.dataset.sev;document.querySelectorAll(".sev").forEach(x=>x.classList.toggle("active",+x.dataset.sev===sev))});
-$("#phaseChips").onclick=async ev=>{const b=ev.target.closest("[data-phase]");if(!b)return;const p=b.dataset.phase;
-  if(bleedOf(viewDate)===p)return;
-  await setBleed(viewDate,p); toast(p==="ninguno"?"Día marcado sin sangrado":"Sangrado "+p+" marcado para "+(viewDate===todayStr()?"hoy":viewDate))};
+$("#phaseChips").onclick=async ev=>{const b=ev.target.closest("[data-phase]");if(!b)return;const p=b.dataset.phase;if(bleedOf(viewDate)===p)return;
+  await setBleed(viewDate,p);toast(p==="ninguno"?"Día marcado sin sangrado":"Sangrado "+p+" marcado")};
+$("#sleepChips").onclick=async ev=>{const b=ev.target.closest("[data-sleep]");if(!b)return;const q=+b.dataset.sleep;if(sleepOf(viewDate)===q)return;
+  const t=viewDate===todayStr()?new Date():new Date(viewDate+"T08:00:00");if(viewDate===todayStr()&&t.getHours()>12)t.setHours(8,0,0,0);
+  await addEntry({kind:"descanso",items:["dormí "+sleepWord(q)],text:"",t:t.toISOString(),q})};
+$("#lights").onclick=ev=>{const b=ev.target.closest("[data-light]");if(!b)return;const info=$("#lightInfo");info.dataset.open=info.dataset.open===b.dataset.light?"":b.dataset.light;renderLights()};
 $("#prevDay").onclick=()=>{viewDate=addDays(viewDate,-1);render()};
 $("#nextDay").onclick=()=>{if(viewDate<todayStr()){viewDate=addDays(viewDate,1);render()}};
-document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+b.dataset.view));if(b.dataset.view==="analisis")analyze()});
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+b.dataset.view));window.scrollTo(0,0);if(b.dataset.view==="analisis")analyze()});
 ["#period","#win","#phaseFilter"].forEach(s=>$(s).onchange=analyze);
 $("#reportBtn").onclick=report;
 if(navigator.share){$("#shareBtn").hidden=false;$("#shareBtn").onclick=shareReport}
@@ -524,7 +734,7 @@ const standalone=window.matchMedia("(display-mode: standalone)").matches||naviga
 if(!standalone)$("#installHint").hidden=false;
 if(ls("autoMic")&&startListening)setTimeout(startListening,400);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){render();if(ls("autoMic")&&startListening)setTimeout(startListening,400)}});
-if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update()).catch(()=>{})}
 })();
 </script>
 </body>
